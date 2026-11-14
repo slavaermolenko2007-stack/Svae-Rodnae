@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Наши фермеры — производители натуральных продуктов в Беларуси">
+    <title>Наши фермеры — Сваё, Роднае</title>
+    <link rel="icon" href="favicon.ico">
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/styles.css">
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+</head>
+<body>
+
+    <header class="site-header">
+        <div class="header-inner">
+            <a href="index.html" class="logo">
+                <img src="images/logo.svg" alt="Сваё, Роднае" width="200" height="50">
+            </a>
+            <nav id="main-nav" class="main-nav">
+                <a href="catalog.html" data-i18n="catalog">Каталог</a>
+                <a href="farmers.html" class="active" data-i18n="farmers">Наши фермеры</a>
+                <a href="how.html" data-i18n="howitworks">Как это работает</a>
+                <a href="about.html" data-i18n="about">О нас</a>
+                <a href="contacts.html" data-i18n="contacts">Контакты</a>
+            </nav>
+            <div class="header-actions">
+                <span class="lang-switch" id="lang-toggle" role="button" tabindex="0">RU</span>
+
+                <span class="auth-link">
+                    <a href="login.html" class="btn btn-outline-success btn-sm">Войти</a>
+                    <a href="register.html" class="btn btn-success btn-sm">Регистрация</a>
+                </span>
+
+                <span class="user-menu" style="display:none;">
+                    <a href="dashboard.html" class="btn btn-outline-success btn-sm">
+                        👤 <span class="user-name">Профиль</span>
+                    </a>
+                    <a href="#" onclick="logoutUser()" class="btn btn-outline-danger btn-sm">Выйти</a>
+                </span>
+
+                <a href="cart.html" class="btn btn-cart" id="cart-btn">
+                    <img src="images/icons/cart.svg" alt="Корзина" width="20" height="20">
+                    Корзина (<span id="cart-count">0</span>)
+                </a>
+                <button class="burger-btn" id="burger"><span></span><span></span><span></span></button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <nav class="breadcrumb">
+                <a href="index.html" data-i18n="catalog">Главная</a> → <span data-i18n="farmers">Наши фермеры</span>
+            </nav>
+
+            <h1 data-i18n="farmers.page_title">Наши фермеры</h1>
+            <p class="subtitle text-muted" style="font-size: var(--text-lg); margin-bottom: var(--space-10);" data-i18n="farmers.subtitle">
+                Познакомьтесь с теми, кто выращивает для вас свежие и натуральные продукты
+            </p>
+
+            <div class="farmers-grid" id="farmers-grid"></div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="index.html">
+                        <img src="images/logo-white.svg" alt="Сваё, Роднае" width="140" height="35">
+                    </a>
+                    <p data-i18n="footer.brand">Маркетплейс фермерской продукции Беларуси. Свежие продукты напрямую от производителя.</p>
+                </div>
+                <nav>
+                    <h4 data-i18n="footer.buyers">Покупателям</h4>
+                    <ul>
+                        <li><a href="catalog.html" data-i18n="catalog">Каталог</a></li>
+                        <li><a href="cart.html" data-i18n="cart">Корзина</a></li>
+                        <li><a href="account.html">Личный кабинет</a></li>
+                    </ul>
+                </nav>
+                <nav>
+                    <h4 data-i18n="footer.farmers">Фермерам</h4>
+                    <ul>
+                        <li><a href="#" data-i18n="footer.partner">Стать партнёром</a></li>
+                        <li><a href="#" data-i18n="footer.conditions">Условия сотрудничества</a></li>
+                    </ul>
+                </nav>
+                <div>
+                    <h4 data-i18n="footer.contacts">Контакты</h4>
+                    <p>📞 +375 (29) 123-45-67</p>
+                    <p>✉️ info@svayo-rodnae.by</p>
+                </div>
+            </div>
+            <p class="footer-copy">
+                <span>© 2025 «Сваё, Роднае». <span data-i18n="footer.copyright">Все права защищены.</span></span>
+                <span id="doc-date"></span>
+            </p>
+        </div>
+    </footer>
+
+    <script src="js/firebase-init.js"></script>
+    <script src="js/firebase-auth.js"></script>
+    <script src="js/firebase-account.js"></script>
+    <script src="js/firebase-orders.js"></script>
+    <script src="js/firebase-products.js"></script>
+    <script src="js/firebase-reviews.js"></script>
+    <script src="js/main.js"></script>
+
+    <script>
+        $(function() {
+            const farmers = [
+                {
+                    id: 1,
+                    name: "Пасека Петровичей",
+                    avatar: "images/farmers/farmer-petrovichi.jpg",
+                    region: "Гродненская область",
+                    description: "Семейная пасека с 30-летним стажем. Натуральный мёд без добавок.",
+                    tags: ["Мёд", "Пыльца", "Прополис", "Перга"],
+                    rating: 5
+                },
+                {
+                    id: 2,
+                    name: "Молочный Рай",
+                    avatar: "images/farmers/farmer-milk.jpg",
+                    region: "Минская область",
+                    description: "Экологически чистые молочные продукты от коров, пасущихся на лугах Минщины.",
+                    tags: ["Творог", "Сметана", "Сыр", "Молоко", "Кефир"],
+                    rating: 5
+                },
+                {
+                    id: 3,
+                    name: "Овощи У Ганны",
+                    avatar: "images/farmers/farmer-ganna.jpg",
+                    region: "Брестская область",
+                    description: "Выращиваем овощи и зелень по традиционным методам, без химии.",
+                    tags: ["Овощи", "Зелень", "Корнеплоды"],
+                    rating: 4
+                },
+                {
+                    id: 4,
+                    name: "Ягодная Поляна",
+                    avatar: "images/farmers/farmer-berry.jpg",
+                    region: "Гомельская область",
+                    description: "Садовая ягода высшего качества. Собираем вручную в пик спелости.",
+                    tags: ["Клубника", "Малина", "Смородина", "Вишня"],
+                    rating: 5
+                },
+                {
+                    id: 5,
+                    name: "Зелёная Долина",
+                    avatar: "images/farmers/farmer-green.jpg",
+                    region: "Витебская область",
+                    description: "Органические крупы, мука и зелень. Сертифицированное хозяйство.",
+                    tags: ["Крупы", "Мука", "Зелень"],
+                    rating: 4
+                },
+                {
+                    id: 6,
+                    name: "Мясной Двор",
+                    avatar: "images/farmers/farmer-meat.jpg",
+                    region: "Могилёвская область",
+                    description: "Натуральное мясо и птица. Животные на свободном выгуле, без гормонов.",
+                    tags: ["Говядина", "Свинина", "Курица", "Индейка"],
+                    rating: 5
+                }
+            ];
+
+            function renderFarmers() {
+                const grid = $("#farmers-grid");
+                grid.empty();
+
+                farmers.forEach(farmer => {
+                    const stars = "★".repeat(farmer.rating) + "☆".repeat(5 - farmer.rating);
+                    const tagsHtml = farmer.tags.map(tag => `<span class="tag">${tag}</span>`).join("");
+
+                    grid.append(`
+                        <article class="farmer-card" data-id="${farmer.id}">
+                            <div class="farmer-card__avatar">
+                                <img src="${farmer.avatar}" alt="${farmer.name}">
+                            </div>
+                            <h3 class="farmer-card__name">${farmer.name}</h3>
+                            <p class="farmer-card__region">📍 ${farmer.region}</p>
+                            <div class="farmer-rating" style="color: var(--warning); font-size: var(--text-base); margin: var(--space-2) 0;">${stars}</div>
+                            <p class="farmer-card__desc">${farmer.description}</p>
+                            <div class="tags">${tagsHtml}</div>
+                            <a href="farmer.html?id=${farmer.id}" class="btn btn-secondary" style="margin-top: var(--space-4); align-self: flex-start;" data-i18n="farmers.details">Подробнее →</a>
+                        </article>
+                    `);
+                });
+            }
+
+            renderFarmers();
+
+            $(document).on("click", ".add-to-cart", function() {
+                const id = $(this).data("id");
+                const name = $(this).data("name");
+                const price = parseFloat($(this).data("price"));
+                addToCart(id, name, price, 1, "Фермер");
+            });
+
+            const lastMod = document.lastModified;
+            if (lastMod) {
+                const dateStr = lastMod.split(' ')[0];
+                $('#doc-date').text('Обновлено: ' + dateStr);
+            }
+        });
+    </script>
+</body>
+</html>

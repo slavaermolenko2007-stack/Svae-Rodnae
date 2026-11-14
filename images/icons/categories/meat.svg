@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" fill="none">
+  <defs>
+    <mask id="meat-mask">
+      <rect x="0" y="0" width="48" height="48" fill="white" />
+      <circle cx="18" cy="22" r="3.5" fill="black" />
+      <path d="M18 25.5V34M18 22H28" stroke="black" stroke-width="2.5" stroke-linecap="round" />
+      <path d="M33 15C37 19 37 25 34 30" stroke="black" stroke-width="2" stroke-linecap="round" />
+      <path d="M29 35.5C26 37 23 37 21 36" stroke="black" stroke-width="1.5" stroke-linecap="round" />
+    </mask>
+  </defs>
+
+  <path d="M25 6C35 6 43 12 43 23C43 33 34 42 24 42C16 42 11 37 12 30C13 24 9 21 7 17C5 11 14 6 25 6Z" fill="#4A8C3F" mask="url(#meat-mask)" />
+</svg>

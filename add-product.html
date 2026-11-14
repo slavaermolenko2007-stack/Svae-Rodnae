@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Добавить товар — Сваё, Роднае</title>
+    <link rel="icon" href="favicon.ico">
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/styles.css">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    
+    
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+
+    <script src="js/firebase-init.js"></script>
+    <script src="js/firebase-auth.js"></script>
+    <script src="js/main.js"></script>
+
+    <style>
+        .container-form {
+            max-width: 600px;
+            margin: 40px auto;
+            background: white;
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+        }
+        .container-form h1 { text-align: center; margin-bottom: 8px; }
+        .container-form .subtitle { text-align: center; color: #6B7280; margin-bottom: 30px; }
+        .container-form .form-group { margin-bottom: 20px; }
+        .container-form label { display: block; font-weight: 600; font-size: 14px; margin-bottom: 6px; }
+        .container-form input,
+        .container-form select,
+        .container-form textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1.5px solid #E5E7EB;
+            border-radius: 10px;
+            transition: border-color 0.3s;
+            font-size: 14px;
+        }
+        .container-form input:focus,
+        .container-form select:focus,
+        .container-form textarea:focus {
+            border-color: #4A8C3F;
+            outline: none;
+        }
+        .container-form textarea { resize: vertical; min-height: 100px; }
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            background: #4A8C3F;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .btn-submit:hover { background: #2E5E2E; }
+        .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+        #message { margin-top: 16px; padding: 12px; border-radius: 8px; display: none; }
+        #message.success { display: block; background: #D1FAE5; color: #065F46; }
+        #message.error { display: block; background: #FEE2E2; color: #991B1B; }
+        #message.loading { display: block; background: #FEF3C7; color: #D97706; }
+        .preview-img {
+            max-width: 200px;
+            max-height: 200px;
+            border-radius: 8px;
+            border: 2px solid #E5E7EB;
+            margin-top: 10px;
+            display: none;
+        }
+        .preview-img.show { display: block; }
+        .file-upload {
+            border: 2px dashed #E5E7EB;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+        .file-upload:hover { border-color: #4A8C3F; }
+        .file-upload input { display: none; }
+        .loading-spinner { text-align: center; padding: 60px 0; }
+        .loading-spinner .spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid #E5E7EB;
+            border-top-color: #4A8C3F;
+            border-radius: 50%;
+            margin: 0 auto 16px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        /* Отладка */
+        #debug {
+            background: #1a1a2e;
+            color: #00ff88;
+            padding: 12px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 150px;
+            overflow-y: auto;
+            margin-top: 12px;
+        }
+        #debug .d-error { color: #ff4444; }
+        #debug .d-success { color: #00ff88; }
+        #debug .d-info { color: #44aaff; }
+        #debug .d-warn { color: #ffaa44; }
+        .debug-line { padding: 2px 0; border-bottom: 1px solid #333; }
+        
+        #storageDisplay {
+            margin-top: 8px;
+            font-size: 11px;
+            background: #f5f5f5;
+            padding: 8px;
+            border-radius: 6px;
+            display: none;
+            max-height: 150px;
+            overflow-y: auto;
+            color: #333;
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        #storageDisplay.show { display: block; }
+        .btn-debug {
+            margin-top: 12px;
+            background: #f0f0f0;
+            border: 1px solid #ccc;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .btn-debug:hover { background: #e0e0e0; }
+    </style>
+</head>
+<body>
+
+    <header class="site-header">
+        <div class="header-inner">
+            <a href="index.html" class="logo">
+                <img src="images/logo.svg" alt="Сваё, Роднае" width="200" height="50">
+            </a>
+            <nav id="main-nav" class="main-nav">
+                <a href="catalog.html">Каталог</a>
+                <a href="farmers.html">Наши фермеры</a>
+                <a href="how.html">Как это работает</a>
+                <a href="about.html">О нас</a>
+                <a href="contacts.html">Контакты</a>
+            </nav>
+            <div class="header-actions">
+                <span class="lang-switch" id="lang-toggle">RU</span>
+                <span class="auth-link">
+                    <a href="login.html" class="btn btn-outline-success btn-sm">Войти</a>
+                    <a href="register.html" class="btn btn-success btn-sm">Регистрация</a>
+                </span>
+                <span class="user-menu" style="display:none;">
+                    <a href="dashboard.html" class="btn btn-outline-success btn-sm">
+                        👤 <span class="user-name">Профиль</span>
+                    </a>
+                    <a href="#" onclick="logoutUser()" class="btn btn-outline-danger btn-sm">Выйти</a>
+                </span>
+                <a href="cart.html" class="btn btn-cart">
+                    <img src="images/icons/cart.svg" alt="Корзина" width="20" height="20">
+                    Корзина (<span id="cart-count">0</span>)
+                </a>
+                <button class="burger-btn" id="burger"><span></span><span></span><span></span></button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            
+            <div id="loading" class="loading-spinner">
+                <div class="spinner"></div>
+                <p style="color:#6B7280;">Проверка авторизации...</p>
+            </div>
+
+            <div id="formWrapper" style="display:none;">
+                <div class="container-form">
+                    <h1>➕ Добавить товар</h1>
+                    <p class="subtitle">Заполните форму, чтобы добавить новый товар в каталог</p>
+
+                    <form id="productForm">
+                        <div class="form-group">
+                            <label>Название *</label>
+                            <input type="text" id="pName" placeholder="Мёд гречишный" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Описание</label>
+                            <textarea id="pDesc" placeholder="Опишите товар..." rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Цена (р.) *</label>
+                            <input type="number" id="pPrice" placeholder="8.50" step="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Единица измерения *</label>
+                            <input type="text" id="pUnit" placeholder="0.5 кг, 500 г, 1 л..." required>
+                        </div>
+                        <div class="form-group">
+                            <label>Категория</label>
+                            <select id="pCategory">
+                                <option value="vegetables">Овощи и фрукты</option>
+                                <option value="dairy">Молочные продукты</option>
+                                <option value="honey">Мёд и варенья</option>
+                                <option value="meat">Мясо и птица</option>
+                                <option value="eggs">Яйца</option>
+                                <option value="bakery">Выпечка</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Регион</label>
+                            <select id="pRegion">
+                                <option value="minsk">Минская</option>
+                                <option value="grodno">Гродненская</option>
+                                <option value="brest">Брестская</option>
+                                <option value="gomel">Гомельская</option>
+                                <option value="vitebsk">Витебская</option>
+                                <option value="mogilev">Могилёвская</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Фото товара</label>
+                            <div class="file-upload" onclick="document.getElementById('pImage').click()">
+                                <div style="font-size:40px;">🖼️</div>
+                                <p style="color:#6B7280;">Нажмите, чтобы выбрать фото</p>
+                                <input type="file" id="pImage" accept="image/*">
+                            </div>
+                            <img id="preview" class="preview-img">
+                        </div>
+                        <button type="submit" class="btn-submit" id="submitBtn">➕ Добавить товар</button>
+                    </form>
+
+                    <div id="message"></div>
+                    
+                   
+                    <button class="btn-debug" id="toggleDebug">🐛 Показать отладку</button>
+                    <div id="debug" style="display:none;">
+                        <div class="debug-line d-info">⏳ Ожидание действий...</div>
+                    </div>
+                    
+                    <button class="btn-debug" id="showStorageBtn">📋 Показать товары в localStorage</button>
+                    <div id="storageDisplay"></div>
+                </div>
+            </div>
+
+            <!-- Доступ запрещён -->
+            <div id="denied" style="display:none; max-width:600px; margin:40px auto; background:white; padding:40px; border-radius:24px; text-align:center; box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+                <div style="font-size:64px;">🚫</div>
+                <h2>Доступ запрещён</h2>
+                <p style="color:#6B7280;">Только фермеры могут добавлять товары.</p>
+                <p id="debugRole" style="font-size:12px; color:#999;"></p>
+                <a href="index.html" class="btn" style="display:inline-block; margin-top:20px; padding:12px 32px; background:#4A8C3F; color:white; border-radius:10px; text-decoration:none;">На главную</a>
+            </div>
+        </div>
+    </main>
+
+    <footer style="background: #1E2C1E; color: rgba(255,255,255,0.7); padding: 24px 0; margin-top: 40px;">
+        <div class="container">
+            <p style="text-align:center; font-size:14px;">© 2025 «Сваё, Роднае».</p>
+        </div>
+    </footer>
+
+    <script>
+        $(function() {
+            const $debug = $('#debug');
+            let debugVisible = false;
+            
+            function log(msg, type = 'info') {
+                const time = new Date().toLocaleTimeString();
+                const cls = type === 'error' ? 'd-error' : 
+                           type === 'success' ? 'd-success' : 
+                           type === 'warn' ? 'd-warn' : 'd-info';
+                $debug.append(`<div class="debug-line ${cls}">[${time}] ${msg}</div>`);
+                $debug.scrollTop($debug[0].scrollHeight);
+                console.log(`[${time}] ${msg}`);
+            }
+
+            
+            $('#toggleDebug').on('click', function() {
+                debugVisible = !debugVisible;
+                $('#debug').toggle(debugVisible);
+                $(this).text(debugVisible ? '🐛 Скрыть отладку' : '🐛 Показать отладку');
+                if (debugVisible) {
+                    log('🔍 Отладка включена', 'info');
+                }
+            });
+
+            
+            $('#showStorageBtn').on('click', function() {
+                const $display = $('#storageDisplay');
+                try {
+                    const data = localStorage.getItem('svayo_products');
+                    if (data) {
+                        const products = JSON.parse(data);
+                        $display.html(`📊 Всего товаров: ${products.length}\n\n${JSON.stringify(products, null, 2)}`);
+                        $display.addClass('show');
+                    } else {
+                        $display.html('📭 Товаров нет');
+                        $display.addClass('show');
+                    }
+                } catch (e) {
+                    $display.html('❌ Ошибка: ' + e.message);
+                    $display.addClass('show');
+                }
+            });
+
+            log('🚀 Страница загружена', 'info');
+
+           
+            $('#pImage').on('change', function() {
+                const file = this.files[0];
+                if (file) {
+                    log(`📷 Выбрано фото: ${file.name} (${(file.size/1024).toFixed(1)}KB)`, 'info');
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        $('#preview').attr('src', e.target.result).addClass('show');
+                        log('✅ Фото загружено в превью', 'success');
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    $('#preview').removeClass('show');
+                }
+            });
+
+        
+            let attempts = 0;
+
+            function checkAuth() {
+                const user = getCurrentUser ? getCurrentUser() : null;
+                log(`🔍 Проверка авторизации, попытка ${attempts + 1}`, 'info');
+                
+                if (user) {
+                    log(`👤 Пользователь найден: ${user.uid}`, 'success');
+                    
+                    getUserData(user.uid).then(result => {
+                        log(`📦 Данные получены`, 'info');
+                        
+                        if (result.success) {
+                            const role = result.data.role || 'user';
+                            log(`🎯 Роль пользователя: "${role}"`, 'info');
+                            
+                            if (role === 'farmer' || role === 'admin') {
+                                log('✅ Доступ разрешён (фермер)', 'success');
+                                $('#loading').hide();
+                                $('#formWrapper').show();
+                            } else {
+                                log(`❌ Доступ запрещён: роль "${role}"`, 'error');
+                                $('#loading').hide();
+                                $('#denied').show();
+                                $('#debugRole').text(`Ваша роль: "${role}". Нужно: "farmer"`);
+                            }
+                        } else {
+                            log(`❌ Ошибка: ${result.error}`, 'error');
+                            $('#loading').hide();
+                            $('#denied').show();
+                            $('#debugRole').text(`Ошибка: ${result.error}`);
+                        }
+                    }).catch(err => {
+                        log(`❌ Ошибка: ${err.message}`, 'error');
+                        $('#loading').hide();
+                        $('#denied').show();
+                        $('#debugRole').text(`Ошибка: ${err.message}`);
+                    });
+                    return;
+                }
+
+                attempts++;
+                if (attempts < 10) {
+                    log(`⏳ Ожидание авторизации... (${attempts}/10)`, 'warn');
+                    setTimeout(checkAuth, 500);
+                } else {
+                    log('❌ Таймаут, перенаправление на логин', 'error');
+                    window.location.href = 'login.html';
+                }
+            }
+
+            setTimeout(checkAuth, 300);
+
+            if (typeof auth !== 'undefined') {
+                auth.onAuthStateChanged(function(user) {
+                    if (user) {
+                        log(`🔄 onAuthStateChanged: пользователь ${user.uid}`, 'success');
+                        checkAuth();
+                    }
+                });
+            }
+
+          
+            $('#productForm').on('submit', function(e) {
+                e.preventDefault();
+
+                const name = $('#pName').val().trim();
+                const price = parseFloat($('#pPrice').val());
+                const unit = $('#pUnit').val().trim();
+                const user = getCurrentUser ? getCurrentUser() : null;
+
+                log(`📝 Отправка формы: ${name}, ${price}р, ${unit}`, 'info');
+
+                if (!name || !price || !unit) {
+                    log('❌ Не все поля заполнены', 'error');
+                    $('#message').removeClass().addClass('error').html('❌ Заполните все обязательные поля').show();
+                    return;
+                }
+                if (!user) {
+                    log('❌ Пользователь не авторизован', 'error');
+                    $('#message').removeClass().addClass('error').html('❌ Вы не авторизованы').show();
+                    return;
+                }
+
+                $('#submitBtn').prop('disabled', true).text('⏳ Сохранение...');
+                $('#message').removeClass().addClass('loading').html('⏳ Добавление товара...').show();
+
+                getUserData(user.uid).then(userResult => {
+                    if (!userResult.success) {
+                        log('❌ Ошибка получения данных пользователя', 'error');
+                        $('#message').removeClass().addClass('error').html('❌ Ошибка получения данных').show();
+                        $('#submitBtn').prop('disabled', false).text('➕ Добавить товар');
+                        return;
+                    }
+
+                    const imageFile = $('#pImage')[0].files[0];
+                    
+                    if (imageFile) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            log('📷 Фото загружено как base64', 'success');
+                            saveProduct(name, price, unit, e.target.result, userResult.data, user);
+                        };
+                        reader.onerror = function() {
+                            log('⚠️ Ошибка чтения фото, используем заглушку', 'warn');
+                            saveProduct(name, price, unit, 'images/placeholder.png', userResult.data, user);
+                        };
+                        reader.readAsDataURL(imageFile);
+                    } else {
+                        log('📷 Фото не выбрано, используем заглушку', 'info');
+                        saveProduct(name, price, unit, 'images/placeholder.png', userResult.data, user);
+                    }
+                }).catch(err => {
+                    log(`❌ ${err.message}`, 'error');
+                    $('#message').removeClass().addClass('error').html('❌ ' + err.message).show();
+                    $('#submitBtn').prop('disabled', false).text('➕ Добавить товар');
+                });
+            });
+
+           
+            function saveProduct(name, price, unit, imageUrl, userData, user) {
+                const product = {
+                    id: Date.now() + Math.floor(Math.random() * 10000),
+                    name: name,
+                    farmer: userData.name || 'Фермер',
+                    price: price,
+                    category: $('#pCategory').val(),
+                    region: $('#pRegion').val(),
+                    rating: 0,
+                    imageUrl: imageUrl,
+                    unit: unit,
+                    description: $('#pDesc').val().trim() || '',
+                    available: true,
+                    farmerId: user.uid,
+                    createdAt: new Date().toISOString()
+                };
+
+                log(`📦 Сохраняем товар: ${product.name} (ID: ${product.id})`, 'info');
+
+                try {
+                   
+                    let products = JSON.parse(localStorage.getItem('svayo_products') || '[]');
+                    products.push(product);
+                    localStorage.setItem('svayo_products', JSON.stringify(products));
+                    log('✅ Сохранено в localStorage', 'success');
+                    
+                  
+                    const saved = JSON.parse(localStorage.getItem('svayo_products') || '[]');
+                    log(`📊 В localStorage ${saved.length} товаров`, 'info');
+
+                   
+                    const firestoreProduct = { ...product };
+                    if (firestoreProduct.imageUrl && firestoreProduct.imageUrl.length > 5000) {
+                        firestoreProduct.imageUrl = 'images/placeholder.png';
+                    }
+                    
+                    db.collection('products').add(firestoreProduct)
+                        .then(() => {
+                            log('✅ Сохранено в Firestore', 'success');
+                            $('#message').removeClass().addClass('success').html('✅ Товар добавлен! Перенаправление...').show();
+                            setTimeout(() => {
+                                window.location.href = 'catalog.html';
+                            }, 1500);
+                        })
+                        .catch(err => {
+                            log(`⚠️ Firestore ошибка: ${err.message}`, 'warn');
+                            $('#message').removeClass().addClass('success').html('✅ Товар сохранён локально! Перенаправление...').show();
+                            setTimeout(() => {
+                                window.location.href = 'catalog.html';
+                            }, 1500);
+                        });
+
+                } catch (err) {
+                    log(`❌ Ошибка: ${err.message}`, 'error');
+                    $('#message').removeClass().addClass('error').html('❌ ' + err.message).show();
+                    $('#submitBtn').prop('disabled', false).text('➕ Добавить товар');
+                }
+            }
+
+        });
+    </script>
+</body>
+</html>

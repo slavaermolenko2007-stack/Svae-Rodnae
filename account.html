@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Личный кабинет — Сваё, Роднае</title>
+    <link rel="icon" href="favicon.ico">
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/styles.css">
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+</head>
+<body>
+
+    <header class="site-header">
+        <div class="header-inner">
+            <a href="index.html" class="logo">
+                <img src="images/logo.svg" alt="Сваё, Роднае" width="200" height="50">
+            </a>
+            <nav id="main-nav" class="main-nav">
+                <a href="catalog.html" data-i18n="catalog">Каталог</a>
+                <a href="farmers.html" data-i18n="farmers">Наши фермеры</a>
+                <a href="account.html" class="active" data-i18n="account.title">Кабинет</a>
+            </nav>
+            <div class="header-actions">
+                <span class="lang-switch" id="lang-toggle" role="button" tabindex="0">RU</span>
+
+                <span class="auth-link">
+                    <a href="login.html" class="btn btn-outline-success btn-sm">Войти</a>
+                    <a href="register.html" class="btn btn-success btn-sm">Регистрация</a>
+                </span>
+
+                <span class="user-menu" style="display:none;">
+                    <a href="dashboard.html" class="btn btn-outline-success btn-sm">
+                        👤 <span class="user-name">Профиль</span>
+                    </a>
+                    <a href="#" onclick="logoutUser()" class="btn btn-outline-danger btn-sm">Выйти</a>
+                </span>
+
+                <a href="cart.html" class="btn btn-cart" id="cart-btn">
+                    <img src="images/icons/cart.svg" alt="Корзина" width="20" height="20">
+                    Корзина (<span id="cart-count">0</span>)
+                </a>
+                <button class="burger-btn" id="burger"><span></span><span></span><span></span></button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <h1 data-i18n="account.title">Личный кабинет</h1>
+
+            <div class="account-layout mt-6">
+                <aside class="account-sidebar">
+                    <nav>
+                        <a href="#" class="active" data-tab="orders">📦 <span data-i18n="account.orders">Мои заказы</span></a>
+                        <a href="#" data-tab="favorites">❤️ <span data-i18n="account.favorites">Избранное</span></a>
+                        <a href="#" data-tab="profile">👤 <span data-i18n="account.profile">Настройки профиля</span></a>
+                        <a href="#" data-tab="addresses">📍 <span data-i18n="account.addresses">Адреса доставки</span></a>
+                        <a href="#" data-tab="exit" class="danger">🚪 <span data-i18n="nav.logout">Выход</span></a>
+                    </nav>
+                </aside>
+
+                <section class="tab-content" id="tab-content">
+                    <!-- Загружается через JS -->
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container"><p class="footer-copy">© 2025 «Сваё, Роднае». <span id="doc-date"></span></p></div>
+    </footer>
+
+    <script src="js/firebase-init.js"></script>
+    <script src="js/firebase-auth.js"></script>
+    <script src="js/firebase-account.js"></script>
+    <script src="js/firebase-orders.js"></script>
+    <script src="js/firebase-products.js"></script>
+    <script src="js/firebase-reviews.js"></script>
+    <script src="js/main.js"></script>
+
+    <script>
+        $(function() {
+            const orders = [
+                { id: "#B123", date: "15.03.2025", amount: "28.50 р.", status: "delivered", items: ["Мёд гречишный", "Творог домашний"] },
+                { id: "#B124", date: "10.03.2025", amount: "12.00 р.", status: "delivered", items: ["Клубника садовая"] },
+                { id: "#B125", date: "05.03.2025", amount: "8.50 р.", status: "transit", items: ["Мёд гречишный"] }
+            ];
+
+            const favorites = [
+                { name: "Мёд гречишный", price: "8.50 р.", image: "images/products/honey-2.jpg" },
+                { name: "Клубника садовая", price: "6.00 р.", image: "images/products/strawberries.jpg" }
+            ];
+
+            function showOrders() {
+                let html = `<h2 data-i18n="account.orders">Мои заказы</h2>`;
+                orders.forEach(order => {
+                    const statusClass = order.status === "delivered" ? "status-delivered" : "status-transit";
+                    const statusText = order.status === "delivered" ? "✅ Доставлен" : "🚚 В пути";
+                    html += `
+                        <article class="order-card">
+                            <div class="order-card__header">
+                                <strong>Заказ ${order.id}</strong>
+                                <span class="order-status ${statusClass}">${statusText}</span>
+                            </div>
+                            <p>📅 Дата: ${order.date}</p>
+                            <p>📦 Товары: ${order.items.join(", ")}</p>
+                            <p>💰 Сумма: ${order.amount}</p>
+                            <button class="btn btn-secondary repeat-order" style="margin-top:var(--space-3);">Повторить заказ</button>
+                        </article>
+                    `;
+                });
+                $("#tab-content").html(html);
+            }
+
+            function showFavorites() {
+                let html = `<h2 data-i18n="account.favorites">Избранные товары</h2><div class="products-grid mt-4">`;
+                favorites.forEach(fav => {
+                    html += `
+                        <article class="product-card">
+                            <div class="product-card__img"><img src="${fav.image}" alt="${fav.name}"></div>
+                            <div class="product-card__body">
+                                <h3>${fav.name}</h3>
+                                <p class="product-card__price">${fav.price}</p>
+                                <button class="btn btn-primary add-to-cart">В корзину</button>
+                                <button class="remove-fav btn btn-secondary" style="margin-top:var(--space-2);">✕ Удалить</button>
+                            </div>
+                        </article>
+                    `;
+                });
+                html += `</div>`;
+                $("#tab-content").html(html);
+            }
+
+            function showProfile() {
+                $("#tab-content").html(`
+                    <h2 data-i18n="account.profile">Настройки профиля</h2>
+                    <form id="profile-form" class="profile-form">
+                        <input type="text" id="name" value="Иван Иванов" placeholder="Ваше имя">
+                        <input type="email" id="email" value="ivan@example.com" placeholder="Email">
+                        <input type="tel" id="phone" value="+375 29 123-45-67" placeholder="Телефон">
+                        <button type="submit" class="btn btn-primary" data-i18n="account.save">Сохранить изменения</button>
+                    </form>
+                `);
+            }
+
+            function showAddresses() {
+                $("#tab-content").html(`
+                    <h2 data-i18n="account.addresses">Адреса доставки</h2>
+                    <div style="padding:var(--space-5);border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:var(--space-4);">
+                        <p><strong>Адрес по умолчанию:</strong></p>
+                        <p>г. Минск, ул. Независимости, д. 123, кв. 45</p>
+                        <button class="btn btn-secondary" style="margin-top:var(--space-3);">Редактировать</button>
+                    </div>
+                    <button class="btn btn-primary">+ Добавить новый адрес</button>
+                `);
+            }
+
+            $(".account-sidebar a").click(function(e) {
+                e.preventDefault();
+                $(".account-sidebar a").removeClass("active");
+                $(this).addClass("active");
+                const tab = $(this).data("tab");
+                if (tab === "orders") showOrders();
+                else if (tab === "favorites") showFavorites();
+                else if (tab === "profile") showProfile();
+                else if (tab === "addresses") showAddresses();
+                else if (tab === "exit") {
+                    if (confirm("Вы уверены?")) {
+                        localStorage.clear();
+                        window.location.href = "index.html";
+                    }
+                }
+            });
+
+            $(document).on("click", ".repeat-order", function() {
+                alert("Товары добавлены в корзину!");
+            });
+
+            $(document).on("click", ".remove-fav", function() {
+                $(this).closest(".product-card").fadeOut(300);
+            });
+
+            $("#profile-form").on("submit", function(e) {
+                e.preventDefault();
+                alert("Данные сохранены!");
+            });
+
+            showOrders();
+        });
+    </script>
+</body>
+</html>

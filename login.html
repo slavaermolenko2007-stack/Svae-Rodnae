@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход — Сваё, Роднае</title>
+    <link rel="icon" href="favicon.ico">
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/styles.css">
+
+  
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+
+    <script src="js/firebase-init.js"></script>
+    <script src="js/firebase-auth.js"></script>
+    <script src="js/main.js"></script>
+</head>
+<body>
+
+    <header class="site-header">
+        <div class="header-inner">
+            <a href="index.html" class="logo">
+                <img src="images/logo.svg" alt="Сваё, Роднае" width="200" height="50">
+            </a>
+            <nav id="main-nav" class="main-nav">
+                <a href="catalog.html">Каталог</a>
+                <a href="farmers.html">Наши фермеры</a>
+                <a href="how.html">Как это работает</a>
+                <a href="about.html">О нас</a>
+                <a href="contacts.html">Контакты</a>
+            </nav>
+            <div class="header-actions">
+                <span class="lang-switch" id="lang-toggle">RU</span>
+
+                <span class="auth-link">
+                    <a href="login.html" class="btn btn-success btn-sm">Войти</a>
+                    <a href="register.html" class="btn btn-outline-success btn-sm">Регистрация</a>
+                </span>
+
+                <span class="user-menu" style="display:none;">
+                    <a href="dashboard.html" class="btn btn-outline-success btn-sm">
+                        👤 <span class="user-name">Профиль</span>
+                    </a>
+                    <a href="#" onclick="logoutUser()" class="btn btn-outline-danger btn-sm">Выйти</a>
+                </span>
+
+                <a href="cart.html" class="btn btn-cart">
+                    <img src="images/icons/cart.svg" alt="Корзина" width="20" height="20">
+                    Корзина (<span id="cart-count">0</span>)
+                </a>
+                <button class="burger-btn" id="burger"><span></span><span></span><span></span></button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <div style="max-width:480px; margin:40px auto; background:white; padding:40px; border-radius:24px; box-shadow:var(--shadow);">
+                <h1 style="text-align:center; margin-bottom:30px;">🔑 Вход</h1>
+
+                <form id="loginForm" data-validate>
+                    <div style="margin-bottom:16px;">
+                        <label style="display:block; margin-bottom:4px; font-weight:600;">Email</label>
+                        <input type="email" id="loginEmail" data-validate="email" data-required="true" placeholder="Ваш email" style="width:100%; padding:12px; border-radius:12px; border:1px solid #ddd;">
+                    </div>
+                    <div style="margin-bottom:24px;">
+                        <label style="display:block; margin-bottom:4px; font-weight:600;">Пароль</label>
+                        <input type="password" id="loginPassword" data-validate="text" data-required="true" placeholder="Пароль" style="width:100%; padding:12px; border-radius:12px; border:1px solid #ddd;">
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width:100%;">Войти</button>
+                </form>
+
+                <p style="text-align:center; margin-top:20px;">
+                    Нет аккаунта? <a href="register.html">Зарегистрироваться</a>
+                </p>
+
+                <div id="loginMessage" style="margin-top:16px;"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="index.html">
+                        <img src="images/logo-white.svg" alt="Сваё, Роднае" width="140" height="35">
+                    </a>
+                    <p>Маркетплейс фермерской продукции Беларуси.</p>
+                </div>
+                <nav>
+                    <h4>Покупателям</h4>
+                    <ul>
+                        <li><a href="catalog.html">Каталог</a></li>
+                        <li><a href="cart.html">Корзина</a></li>
+                    </ul>
+                </nav>
+                <nav>
+                    <h4>Фермерам</h4>
+                    <ul>
+                        <li><a href="#">Стать партнёром</a></li>
+                    </ul>
+                </nav>
+                <div>
+                    <h4>Контакты</h4>
+                    <p>✉️ info@svayo-rodnae.by</p>
+                </div>
+            </div>
+            <p class="footer-copy">© 2025 «Сваё, Роднае».</p>
+        </div>
+    </footer>
+
+    <script>
+        $(function() {
+            
+            if (getCurrentUser()) {
+                window.location.href = 'dashboard.html';
+                return;
+            }
+
+            $('#loginForm').on('form-valid', async function() {
+                const email = $('#loginEmail').val().trim();
+                const password = $('#loginPassword').val();
+
+                $('#loginMessage').html('<p style="color: var(--text-muted);">⏳ Вход...</p>');
+
+                const result = await loginUser(email, password);
+
+                if (result.success) {
+                    $('#loginMessage').html('<p style="color: var(--success);">✅ Вход выполнен!</p>');
+                    
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 1000);
+                } else {
+                    $('#loginMessage').html('<p style="color: var(--error);">❌ ' + result.error + '</p>');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

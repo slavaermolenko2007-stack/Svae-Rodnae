@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Корзина — Сваё, Роднае</title>
+    <link rel="icon" href="favicon.ico">
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/styles.css">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+
+    <script src="js/firebase-init.js"></script>
+    <script src="js/firebase-auth.js"></script>
+    <script src="js/main.js"></script>
+
+    <style>
+        .order-summary {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            position: sticky;
+            top: 90px;
+        }
+        .cart-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px;
+            border: 1px solid #E5E7EB;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            background: white;
+            transition: box-shadow 0.3s;
+        }
+        .cart-row:hover {
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        }
+        .qty-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .qty-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 1px solid #E5E7EB;
+            background: white;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        .qty-btn:hover {
+            border-color: #4A8C3F;
+            color: #4A8C3F;
+        }
+        .qty-control input {
+            width: 50px;
+            text-align: center;
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+            padding: 4px;
+        }
+        .remove-btn {
+            background: none;
+            border: none;
+            color: #DC2626;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 8px;
+            transition: background 0.3s;
+        }
+        .remove-btn:hover {
+            background: #FEE2E2;
+        }
+        .progress-container {
+            margin: 15px 0;
+            background: #E5E7EB;
+            border-radius: 8px;
+            overflow: hidden;
+            height: 10px;
+        }
+        .progress-bar-custom {
+            width: 0%;
+            height: 100%;
+            background: #4A8C3F;
+            transition: width 0.3s;
+            border-radius: 8px;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6B7280;
+        }
+        .empty-state .icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+        @media (max-width: 768px) {
+            .cart-row {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="site-header">
+        <div class="header-inner">
+            <a href="index.html" class="logo">
+                <img src="images/logo.svg" alt="Сваё, Роднае" width="200" height="50">
+            </a>
+            <nav id="main-nav" class="main-nav">
+                <a href="catalog.html">Каталог</a>
+                <a href="farmers.html">Наши фермеры</a>
+                <a href="how.html">Как это работает</a>
+                <a href="about.html">О нас</a>
+                <a href="contacts.html">Контакты</a>
+            </nav>
+            <div class="header-actions">
+                <span class="lang-switch" id="lang-toggle">RU</span>
+
+                <span class="auth-link">
+                    <a href="login.html" class="btn btn-outline-success btn-sm">Войти</a>
+                    <a href="register.html" class="btn btn-success btn-sm">Регистрация</a>
+                </span>
+
+                <span class="user-menu" style="display:none;">
+                    <a href="dashboard.html" class="btn btn-outline-success btn-sm">
+                        👤 <span class="user-name">Профиль</span>
+                    </a>
+                    <a href="#" onclick="logoutUser()" class="btn btn-outline-danger btn-sm">Выйти</a>
+                </span>
+
+                <a href="cart.html" class="btn btn-cart" id="cart-btn">
+                    <img src="images/icons/cart.svg" alt="Корзина" width="20" height="20">
+                    Корзина (<span id="cart-count">0</span>)
+                </a>
+                <button class="burger-btn" id="burger"><span></span><span></span><span></span></button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <nav class="breadcrumb">
+                <a href="index.html">Главная</a> → <span>Корзина</span>
+            </nav>
+
+            <h1>Корзина <span id="cart-count-title" class="text-muted text-sm">(0)</span></h1>
+
+            <div style="display:grid; grid-template-columns: 1fr 340px; gap: 30px; margin-top: 30px;">
+                <section id="cart-items-container">
+                    <div class="empty-state">
+                        <div class="icon">🛒</div>
+                        <h2>Корзина пуста</h2>
+                        <p><a href="catalog.html">Перейти в каталог</a></p>
+                    </div>
+                </section>
+
+                <aside class="order-summary">
+                    <h2>Итог заказа</h2>
+                    <p><span>Товары</span>: <strong id="subtotal">0.00 р.</strong></p>
+                    <p><span>Доставка</span>: <strong id="delivery">3.00 р.</strong></p>
+                    <hr>
+                    <p style="font-size:18px; font-weight:700;"><span>Итого</span>: <strong id="total">3.00 р.</strong></p>
+
+                    <div class="progress-container">
+                        <div class="progress-bar-custom" id="progressBar"></div>
+                    </div>
+                    <p id="progressStatus" style="font-size:14px; color:#6B7280; text-align:center;">Готово к оформлению</p>
+
+                    <input type="text" id="promo-code" class="promo-code" placeholder="Промокод" style="width:100%; padding:10px; border:1px solid #E5E7EB; border-radius:10px; margin:10px 0;">
+                    <button class="btn btn-secondary" id="applyPromo" style="width:100%;">Применить</button>
+                    
+                    <!-- Форма оформления заказа -->
+                    <div style="margin-top:16px;">
+                        <h3 style="font-size:16px; margin-bottom:12px;">Данные для доставки</h3>
+                        <input type="text" id="orderName" placeholder="Ваше имя" style="width:100%; padding:10px; border:1px solid #E5E7EB; border-radius:10px; margin-bottom:8px;">
+                        <input type="text" id="orderPhone" placeholder="Телефон" style="width:100%; padding:10px; border:1px solid #E5E7EB; border-radius:10px; margin-bottom:8px;">
+                        <input type="text" id="orderAddress" placeholder="Адрес доставки" style="width:100%; padding:10px; border:1px solid #E5E7EB; border-radius:10px; margin-bottom:8px;">
+                    </div>
+
+                    <button class="btn btn-primary" id="startOrderBtn" style="width:100%; margin-top:10px;">Оформить заказ</button>
+                </aside>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="index.html"><img src="images/logo-white.svg" alt="Сваё, Роднае" width="140" height="35"></a>
+                    <p>Маркетплейс фермерской продукции Беларуси.</p>
+                </div>
+                <nav>
+                    <h4>Покупателям</h4>
+                    <ul>
+                        <li><a href="catalog.html">Каталог</a></li>
+                        <li><a href="cart.html">Корзина</a></li>
+                    </ul>
+                </nav>
+                <nav>
+                    <h4>Фермерам</h4>
+                    <ul>
+                        <li><a href="#">Стать партнёром</a></li>
+                    </ul>
+                </nav>
+                <div>
+                    <h4>Контакты</h4>
+                    <p>✉️ info@svayo-rodnae.by</p>
+                </div>
+            </div>
+            <p class="footer-copy">© 2025 «Сваё, Роднае». <span id="doc-date"></span></p>
+        </div>
+    </footer>
+
+    <script>
+        $(function() {
+
+            function updateAuthUI() {
+                try {
+                    const user = getCurrentUser ? getCurrentUser() : null;
+                    const authLinks = document.querySelectorAll('.auth-link');
+                    const userMenu = document.querySelector('.user-menu');
+                    const userNameEl = document.querySelector('.user-name');
+
+                    if (user) {
+                        getUserData(user.uid).then(result => {
+                            if (result.success) {
+                                window.currentUser = { uid: user.uid, ...result.data };
+                                authLinks.forEach(el => el.style.display = 'none');
+                                if (userMenu) userMenu.style.display = 'inline-block';
+                                if (userNameEl) userNameEl.textContent = result.data.name || 'Пользователь';
+                                // Подставляем имя в форму
+                                if (result.data.name) $('#orderName').val(result.data.name);
+                                if (result.data.phone) $('#orderPhone').val(result.data.phone);
+                                if (result.data.address) $('#orderAddress').val(result.data.address);
+                            }
+                        });
+                    } else {
+                        authLinks.forEach(el => el.style.display = 'inline-block');
+                        if (userMenu) userMenu.style.display = 'none';
+                    }
+                } catch (e) {}
+            }
+            setTimeout(updateAuthUI, 500);
+            if (typeof auth !== 'undefined') {
+                auth.onAuthStateChanged(() => setTimeout(updateAuthUI, 300));
+            }
+
+          
+            function getCart() {
+                try { return JSON.parse(localStorage.getItem('svayo_cart')) || []; } 
+                catch { return []; }
+            }
+
+            function saveCart(cart) {
+                try { localStorage.setItem('svayo_cart', JSON.stringify(cart)); } 
+                catch (e) { console.warn(e); }
+            }
+
+            function updateCartCounterUI() {
+                const cart = getCart();
+                const total = cart.reduce((s, i) => s + (i.quantity || 0), 0);
+                $('#cart-count').text(total);
+                $('#cart-count-title').text('(' + total + ')');
+            }
+
+            function renderCart() {
+                const cart = getCart();
+                const container = $("#cart-items-container");
+                let subtotal = 0;
+                container.empty();
+
+                if (cart.length === 0) {
+                    container.html(`
+                        <div class="empty-state">
+                            <div class="icon">🛒</div>
+                            <h2>Корзина пуста</h2>
+                            <p><a href="catalog.html">Перейти в каталог</a></p>
+                        </div>
+                    `);
+                    $("#subtotal").text("0.00 р.");
+                    $("#total").text("3.00 р.");
+                    updateCartCounterUI();
+                    return;
+                }
+
+                cart.forEach((item, index) => {
+                    const itemTotal = parseFloat(item.price) * parseInt(item.quantity);
+                    subtotal += itemTotal;
+                    container.append(`
+                        <div class="cart-row" data-index="${index}">
+                            <div style="flex:1;">
+                                <h3 style="font-size:16px; margin-bottom:2px;">${item.name}</h3>
+                                <p style="font-size:13px; color:#6B7280;">${item.farmer || "Фермер"}</p>
+                            </div>
+                            <div class="qty-control">
+                                <button class="qty-btn minus">−</button>
+                                <input type="number" value="${item.quantity}" min="1">
+                                <button class="qty-btn plus">+</button>
+                            </div>
+                            <p style="min-width:80px; text-align:right; font-weight:600;">${itemTotal.toFixed(2)} р.</p>
+                            <button class="remove-btn">✕</button>
+                        </div>
+                    `);
+                });
+
+                const delivery = cart.length > 0 ? 3.00 : 0;
+                const total = subtotal + delivery;
+                $("#subtotal").text(subtotal.toFixed(2) + " р.");
+                $("#delivery").text(delivery.toFixed(2) + " р.");
+                $("#total").text(total.toFixed(2) + " р.");
+                updateCartCounterUI();
+                saveCart(cart);
+            }
+
+          
+            $(document).on("click", ".minus", function() {
+                const row = $(this).closest(".cart-row");
+                const index = row.data("index");
+                let cart = getCart();
+                if (cart[index] && cart[index].quantity > 1) {
+                    cart[index].quantity--;
+                    saveCart(cart);
+                    renderCart();
+                }
+            });
+
+            $(document).on("click", ".plus", function() {
+                const row = $(this).closest(".cart-row");
+                const index = row.data("index");
+                let cart = getCart();
+                if (cart[index]) {
+                    cart[index].quantity++;
+                    saveCart(cart);
+                    renderCart();
+                }
+            });
+
+            $(document).on("change", ".cart-row input", function() {
+                const row = $(this).closest(".cart-row");
+                const index = row.data("index");
+                let cart = getCart();
+                const val = parseInt($(this).val());
+                if (!isNaN(val) && val > 0 && cart[index]) {
+                    cart[index].quantity = val;
+                    saveCart(cart);
+                    renderCart();
+                } else {
+                    renderCart();
+                }
+            });
+
+            $(document).on("click", ".remove-btn", function() {
+                const row = $(this).closest(".cart-row");
+                const index = row.data("index");
+                let cart = getCart();
+                cart.splice(index, 1);
+                saveCart(cart);
+                renderCart();
+            });
+
+        
+            $("#applyPromo").click(function() {
+                const promo = $("#promo-code").val().trim();
+                if (promo === "FRESH2025") {
+                    const subtotal = parseFloat($("#subtotal").text()) || 0;
+                    const newTotal = (subtotal * 0.9 + 3).toFixed(2);
+                    $("#total").text(newTotal + " р.");
+                    alert("✅ Промокод применён! Скидка 10%");
+                } else {
+                    alert("❌ Неверный промокод");
+                }
+            });
+
+           
+            $("#startOrderBtn").click(async function() {
+                const cart = getCart();
+                if (cart.length === 0) {
+                    alert("❌ Корзина пуста!");
+                    return;
+                }
+
+                const user = getCurrentUser ? getCurrentUser() : null;
+                if (!user) {
+                    alert("❌ Войдите в систему, чтобы оформить заказ");
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const name = $("#orderName").val().trim();
+                const phone = $("#orderPhone").val().trim();
+                const address = $("#orderAddress").val().trim();
+
+                if (!name || !phone || !address) {
+                    alert("❌ Заполните все поля для доставки!");
+                    return;
+                }
+
+             
+                let progress = 0;
+                $("#startOrderBtn").prop("disabled", true).text("Обработка...");
+                $("#progressStatus").text("⏳ Оформление заказа...");
+
+                const interval = setInterval(() => {
+                    progress += 10;
+                    $('#progressBar').css('width', progress + '%');
+                    $('#progressStatus').text('⏳ Оформление заказа... ' + progress + '%');
+                }, 200);
+
+                try {
+
+                    const orderData = {
+                        items: cart.map(item => ({
+                            id: item.id,
+                            name: item.name,
+                            price: item.price,
+                            quantity: item.quantity,
+                            farmer: item.farmer || 'Фермер'
+                        })),
+                        total: parseFloat($("#total").text()) || 0,
+                        subtotal: parseFloat($("#subtotal").text()) || 0,
+                        delivery: 3.00,
+                        name: name,
+                        phone: phone,
+                        address: address,
+                        userId: user.uid,
+                        status: 'pending',
+                        createdAt: new Date().toISOString()
+                    };
+
+                    
+                    localStorage.setItem('svayo_last_order', JSON.stringify(orderData));
+
+                    
+                    await db.collection('orders').add(orderData);
+
+                    clearInterval(interval);
+                    $('#progressBar').css('width', '100%');
+                    $('#progressStatus').text('✅ Заказ оформлен! Спасибо!');
+                    $("#startOrderBtn").text("✅ Заказ оформлен");
+                    
+                    
+                    localStorage.removeItem('svayo_cart');
+                    renderCart();
+                    
+                    
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 2000);
+
+                } catch (error) {
+                    clearInterval(interval);
+                    console.error('Ошибка:', error);
+                    $('#progressStatus').text('❌ Ошибка оформления заказа');
+                    $("#startOrderBtn").prop("disabled", false).text("Оформить заказ");
+                    alert('❌ ' + error.message);
+                }
+            });
+
+      
+            renderCart();
+
+            const lastMod = document.lastModified;
+            if (lastMod) {
+                const dateStr = lastMod.split(' ')[0];
+                $('#doc-date').text('Обновлено: ' + dateStr);
+            }
+
+        });
+    </script>
+</body>
+</html>

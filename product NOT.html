@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мёд гречишный — Сваё, Роднае</title>
+    <link rel="icon" href="favicon.ico">
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/styles.css">
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+</head>
+<body>
+
+    <header class="site-header">
+        <div class="header-inner">
+            <a href="index.html" class="logo">
+                <img src="images/logo.svg" alt="Сваё, Роднае" width="200" height="50">
+            </a>
+            <nav id="main-nav" class="main-nav">
+                <a href="catalog.html" data-i18n="catalog">Каталог</a>
+                <a href="farmers.html" data-i18n="farmers">Наши фермеры</a>
+                <a href="how.html" data-i18n="howitworks">Как это работает</a>
+            </nav>
+            <div class="header-actions">
+                <span class="lang-switch" id="lang-toggle" role="button" tabindex="0">RU</span>
+
+                <span class="auth-link">
+                    <a href="login.html" class="btn btn-outline-success btn-sm">Войти</a>
+                    <a href="register.html" class="btn btn-success btn-sm">Регистрация</a>
+                </span>
+
+                <span class="user-menu" style="display:none;">
+                    <a href="dashboard.html" class="btn btn-outline-success btn-sm">
+                        👤 <span class="user-name">Профиль</span>
+                    </a>
+                    <a href="#" onclick="logoutUser()" class="btn btn-outline-danger btn-sm">Выйти</a>
+                </span>
+
+                <a href="cart.html" class="btn btn-cart" id="cart-btn">
+                    <img src="images/icons/cart.svg" alt="Корзина" width="20" height="20">
+                    Корзина (<span id="cart-count">0</span>)
+                </a>
+                <button class="burger-btn" id="burger"><span></span><span></span><span></span></button>
+            </div>
+        </div>
+    </header>
+
+    <main class="product-page">
+        <div class="container">
+            <nav class="breadcrumb">
+                <a href="index.html" data-i18n="catalog">Главная</a> → <a href="catalog.html" data-i18n="catalog">Каталог</a> → <span>Мёд гречишный</span>
+            </nav>
+
+            <div class="product-layout">
+                <figure class="product-gallery">
+                    <img id="main-photo" src="images/products/honey-2.jpg" alt="Мёд гречишный">
+                    <div class="thumbnails">
+                        <img src="images/products/honey.jpg" class="thumb active" onclick="changePhoto(this)">
+                        <img src="images/products/honey-2.jpg" class="thumb" onclick="changePhoto(this)">
+                        <img src="images/products/honey-3.jpg" class="thumb" onclick="changePhoto(this)">
+                    </div>
+                </figure>
+
+                <article class="product-info">
+                    <h1>Мёд гречишный натуральный</h1>
+                    <div class="rating">★★★★★ <span>(24 отзыва)</span></div>
+                    <p class="price">8.50 р. <span>/ 0.5 кг</span></p>
+
+                    <div class="quantity-control">
+                        <button class="qty-btn" id="minus">−</button>
+                        <input type="number" id="qty" value="1" min="1">
+                        <button class="qty-btn" id="plus">+</button>
+                    </div>
+
+                    <button class="btn btn-primary" id="addToCartBtn">В корзину</button>
+                    <button class="btn btn-secondary" id="favoriteBtn">♡ В избранное</button>
+
+                    <section class="product-desc">
+                        <h2>Описание</h2>
+                        <p>Натуральный гречишный мёд с пасеки Петровичей. Обладает тёмно-коричневым цветом, насыщенным ароматом и терпким вкусом.</p>
+                        <h3>Состав:</h3>
+                        <p>Мёд натуральный гречишный (100%). Без добавок.</p>
+                    </section>
+                </article>
+            </div>
+
+            <section class="reviews">
+                <h2 data-i18n="product.reviews">Отзывы покупателей</h2>
+                <div id="reviews-list">
+                    <article class="review">
+                        <strong>Марина К.</strong>
+                        <div class="stars">★★★★★</div>
+                        <p>Отличный мёд, очень ароматный!</p>
+                        <small>15 марта 2025</small>
+                    </article>
+                    <article class="review">
+                        <strong>Алексей П.</strong>
+                        <div class="stars">★★★★☆</div>
+                        <p>Хороший мёд, качество отличное.</p>
+                        <small>10 марта 2025</small>
+                    </article>
+                </div>
+
+                <form id="review-form">
+                    <h3 data-i18n="product.add_review">Оставить отзыв</h3>
+                    <select id="review-stars" required>
+                        <option value="5">★★★★★ (5)</option>
+                        <option value="4">★★★★☆ (4)</option>
+                        <option value="3">★★★☆☆ (3)</option>
+                        <option value="2">★★☆☆☆ (2)</option>
+                        <option value="1">★☆☆☆☆ (1)</option>
+                    </select>
+                    <textarea id="review-text" placeholder="Ваш отзыв..." rows="4" required></textarea>
+                    <button type="submit" class="btn btn-primary" data-i18n="product.send">Отправить отзыв</button>
+                </form>
+            </section>
+
+            <section class="similar-products mt-10">
+                <h2 data-i18n="product.similar">Похожие товары</h2>
+                <div class="products-grid">
+                    <article class="product-card">
+                        <div class="product-card__img"><img src="images/products/buckwheat.jpg" alt="Гречиха"></div>
+                        <div class="product-card__body"><h3>Гречиха зелёная</h3><p class="product-card__price">5.00 р.</p></div>
+                    </article>
+                    <article class="product-card">
+                        <div class="product-card__img"><img src="images/products/pollen.jpg" alt="Пыльца"></div>
+                        <div class="product-card__body"><h3>Пыльца цветочная</h3><p class="product-card__price">12.00 р.</p></div>
+                    </article>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container"><p class="footer-copy">© 2025 «Сваё, Роднае». <span id="doc-date"></span></p></div>
+    </footer>
+
+    <script src="js/firebase-init.js"></script>
+    <script src="js/firebase-auth.js"></script>
+    <script src="js/firebase-account.js"></script>
+    <script src="js/firebase-orders.js"></script>
+    <script src="js/firebase-products.js"></script>
+    <script src="js/firebase-reviews.js"></script>
+    <script src="js/main.js"></script>
+
+    <script>
+        $(function() {
+            window.changePhoto = function(el) {
+                $(".thumb").removeClass("active");
+                $(el).addClass("active");
+                $("#main-photo").fadeOut(150, function() {
+                    $(this).attr("src", $(el).attr("src")).fadeIn(150);
+                });
+            };
+
+            let qtyInput = $("#qty");
+            $("#minus").click(() => { if (qtyInput.val() > 1) qtyInput.val(parseInt(qtyInput.val()) - 1); });
+            $("#plus").click(() => { qtyInput.val(parseInt(qtyInput.val()) + 1); });
+
+            $("#addToCartBtn").click(function() {
+                const qty = parseInt(qtyInput.val());
+                addToCart(1, "Мёд гречишный", 8.50, qty, "Пасека Петровичей");
+            });
+
+            $("#favoriteBtn").click(function() {
+                $(this).toggleClass("active");
+                $(this).html($(this).hasClass("active") ? "❤️ В избранном" : "♡ В избранное");
+            });
+
+            $("#review-form").submit(function(e) {
+                e.preventDefault();
+                const stars = $("#review-stars").val();
+                const text = $("#review-text").val().trim();
+                if (!text) { alert("Напишите текст отзыва"); return false; }
+                const starsDisplay = "★".repeat(stars) + "☆".repeat(5 - stars);
+                const date = new Date().toLocaleDateString("ru-RU");
+                $("#reviews-list").prepend(`
+                    <article class="review">
+                        <strong>Новый отзыв</strong>
+                        <div class="stars">${starsDisplay}</div>
+                        <p>${text}</p>
+                        <small>${date}</small>
+                    </article>
+                `);
+                $("#review-text").val("");
+                alert("Спасибо за отзыв!");
+            });
+        });
+    </script>
+</body>
+</html>

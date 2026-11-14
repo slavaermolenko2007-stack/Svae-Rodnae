@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="О проекте Сваё, Роднае — маркетплейс фермерской продукции Беларуси">
+    <title>О нас — Сваё, Роднае</title>
+    <link rel="icon" href="favicon.ico">
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/styles.css">
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+</head>
+<body>
+
+    <header class="site-header">
+        <div class="header-inner">
+            <a href="index.html" class="logo">
+                <img src="images/logo.svg" alt="Сваё, Роднае" width="200" height="50">
+            </a>
+            <nav id="main-nav" class="main-nav">
+                <a href="catalog.html" data-i18n="catalog">Каталог</a>
+                <a href="farmers.html" data-i18n="farmers">Наши фермеры</a>
+                <a href="how.html" data-i18n="howitworks">Как это работает</a>
+                <a href="about.html" class="active" data-i18n="about">О нас</a>
+                <a href="contacts.html" data-i18n="contacts">Контакты</a>
+            </nav>
+            <div class="header-actions">
+                <span class="lang-switch" id="lang-toggle" role="button" tabindex="0">RU</span>
+
+                <span class="auth-link">
+                    <a href="login.html" class="btn btn-outline-success btn-sm">Войти</a>
+                    <a href="register.html" class="btn btn-success btn-sm">Регистрация</a>
+                </span>
+
+                <span class="user-menu" style="display:none;">
+                    <a href="dashboard.html" class="btn btn-outline-success btn-sm">
+                        👤 <span class="user-name">Профиль</span>
+                    </a>
+                    <a href="#" onclick="logoutUser()" class="btn btn-outline-danger btn-sm">Выйти</a>
+                </span>
+
+                <a href="cart.html" class="btn btn-cart" id="cart-btn">
+                    <img src="images/icons/cart.svg" alt="Корзина" width="20" height="20">
+                    Корзина (<span id="cart-count">0</span>)
+                </a>
+                <button class="burger-btn" id="burger"><span></span><span></span><span></span></button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <nav class="breadcrumb">
+                <a href="index.html" data-i18n="catalog">Главная</a> → <span data-i18n="about">О нас</span>
+            </nav>
+
+            <h1 data-i18n="about.title">О проекте «Сваё, Роднае»</h1>
+            <p class="subtitle text-muted" style="font-size: var(--text-lg); margin-bottom: var(--space-10); max-width: 700px;" data-i18n="about.subtitle">
+                Мы соединяем белорусских фермеров и тех, кто ценит натуральные продукты
+            </p>
+
+            <div style="background: var(--white); border-radius: var(--radius-xl); padding: var(--space-10); margin: var(--space-8) 0;">
+                <h2 data-i18n="about.mission">Наша миссия</h2>
+                <p data-i18n="about.mission_text">Создать удобную площадку для прямой продажи фермерской продукции, устранить посредников между производителями и покупателями, обеспечить горожан доступом к свежим, качественным, натуральным продуктам.</p>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-card__icon">📅</div>
+                    <div class="stat-card__value">2025</div>
+                    <div class="stat-card__label" data-i18n="about.year">Год основания проекта</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card__icon">👨‍🌾</div>
+                    <div class="stat-card__value">150+</div>
+                    <div class="stat-card__label" data-i18n="about.farmers_count">Фермеров на платформе</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card__icon">🏙️</div>
+                    <div class="stat-card__value">20+</div>
+                    <div class="stat-card__label" data-i18n="about.cities">Городов доставки</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card__icon">🚚</div>
+                    <div class="stat-card__value">5000+</div>
+                    <div class="stat-card__label" data-i18n="about.orders">Доставленных заказов</div>
+                </div>
+            </div>
+
+            <div class="values-block mt-10">
+                <h2 style="color: #fff;" data-i18n="about.values">Наши ценности</h2>
+                <div class="values-tags">
+                    <span>🌿 Экологичность</span>
+                    <span>🤝 Честность</span>
+                    <span>🚀 Качество</span>
+                    <span>💚 Прозрачность</span>
+                    <span>🔄 Устойчивость</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="index.html">
+                        <img src="images/logo-white.svg" alt="Сваё, Роднае" width="140" height="35">
+                    </a>
+                    <p data-i18n="footer.brand">Маркетплейс фермерской продукции Беларуси. Свежие продукты напрямую от производителя.</p>
+                </div>
+                <nav>
+                    <h4 data-i18n="footer.buyers">Покупателям</h4>
+                    <ul>
+                        <li><a href="catalog.html" data-i18n="catalog">Каталог</a></li>
+                        <li><a href="cart.html" data-i18n="cart">Корзина</a></li>
+                        <li><a href="account.html">Личный кабинет</a></li>
+                    </ul>
+                </nav>
+                <nav>
+                    <h4 data-i18n="footer.farmers">Фермерам</h4>
+                    <ul>
+                        <li><a href="#" data-i18n="footer.partner">Стать партнёром</a></li>
+                        <li><a href="#" data-i18n="footer.conditions">Условия сотрудничества</a></li>
+                    </ul>
+                </nav>
+                <div>
+                    <h4 data-i18n="footer.contacts">Контакты</h4>
+                    <p>📞 +375 (29) 123-45-67</p>
+                    <p>✉️ info@svayo-rodnae.by</p>
+                </div>
+            </div>
+            <p class="footer-copy">
+                <span>© 2025 «Сваё, Роднае». <span data-i18n="footer.copyright">Все права защищены.</span></span>
+                <span id="doc-date"></span>
+            </p>
+        </div>
+    </footer>
+
+    <script src="js/firebase-init.js"></script>
+    <script src="js/firebase-auth.js"></script>
+    <script src="js/firebase-account.js"></script>
+    <script src="js/firebase-orders.js"></script>
+    <script src="js/firebase-products.js"></script>
+    <script src="js/firebase-reviews.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

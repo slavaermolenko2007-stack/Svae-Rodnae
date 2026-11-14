@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Агрегатор фермерской продукции Беларуси — свежие продукты прямо с грядки">
+    <title>Сваё, Роднае — свежие продукты от фермеров</title>
+    <link rel="icon" href="favicon.ico">
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/styles.css">
+
+ 
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+</head>
+<body>
+
+ 
+ 
+    <header class="site-header">
+        <div class="header-inner">
+            <a href="index.html" class="logo">
+                <img src="images/logo.svg" alt="Сваё, Роднае" width="200" height="50">
+            </a>
+            <nav id="main-nav" class="main-nav">
+                <a href="catalog.html" data-i18n="catalog">Каталог</a>
+                <a href="farmers.html" data-i18n="farmers">Наши фермеры</a>
+                <a href="how.html" data-i18n="howitworks">Как это работает</a>
+                <a href="about.html" data-i18n="about">О нас</a>
+                <a href="contacts.html" data-i18n="contacts">Контакты</a>
+            </nav>
+            <div class="header-actions">
+                <span class="lang-switch" id="lang-toggle" role="button" tabindex="0">RU</span>
+
+               
+			   
+                <span class="auth-link">
+                    <a href="login.html" class="btn btn-outline-success btn-sm">Войти</a>
+                    <a href="register.html" class="btn btn-success btn-sm">Регистрация</a>
+                </span>
+
+             
+			 
+                <span class="user-menu" style="display:none;">
+                    <a href="dashboard.html" class="btn btn-outline-success btn-sm">
+                        👤 <span class="user-name">Профиль</span>
+                    </a>
+                    <a href="#" onclick="logoutUser()" class="btn btn-outline-danger btn-sm">Выйти</a>
+                </span>
+
+                <a href="cart.html" class="btn btn-cart" id="cart-btn">
+                    <img src="images/icons/cart.svg" alt="Корзина" width="20" height="20">
+                    Корзина (<span id="cart-count">0</span>)
+                </a>
+                <button class="burger-btn" id="burger" aria-label="Открыть меню" aria-expanded="false">
+                    <span></span><span></span><span></span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+   
+   
+    <main>
+        
+		
+        <section class="hero">
+            <div class="container">
+                <div class="grid-12">
+                    <div class="col-8 hero-content">
+                        <h1 data-i18n="hero.title">Свежие продукты прямо <em>с грядки</em></h1>
+                        <p data-i18n="hero.subtitle">Без посредников. Только проверенные белорусские фермеры.</p>
+                        <a href="catalog.html" class="btn btn-primary" data-i18n="hero.btn">Перейти в каталог</a>
+                    </div>
+                    <div class="col-4 hero-image">
+                        <img src="images/hero-vegetables.png" alt="Свежие овощи">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+   
+   
+        <section class="categories container mt-10">
+            <h2 data-i18n="categories.title">Выберите категорию</h2>
+            <div class="cat-grid-horizontal">
+                <a href="catalog.html?cat=vegetables" class="cat-card-horizontal">
+                    <img src="images/icons/categories/vegetables.svg" alt="Овощи и фрукты">
+                    <span data-i18n="categories.vegetables">Овощи и фрукты</span>
+                </a>
+                <a href="catalog.html?cat=dairy" class="cat-card-horizontal">
+                    <img src="images/icons/categories/dairy.svg" alt="Молочные продукты">
+                    <span data-i18n="categories.dairy">Молочные продукты</span>
+                </a>
+                <a href="catalog.html?cat=honey" class="cat-card-horizontal">
+                    <img src="images/icons/categories/honey.svg" alt="Мёд и варенья">
+                    <span data-i18n="categories.honey">Мёд и варенья</span>
+                </a>
+                <a href="catalog.html?cat=meat" class="cat-card-horizontal">
+                    <img src="images/icons/categories/meat.svg" alt="Мясо и птица">
+                    <span data-i18n="categories.meat">Мясо и птица</span>
+                </a>
+                <a href="catalog.html?cat=eggs" class="cat-card-horizontal">
+                    <img src="images/icons/categories/eggs.svg" alt="Яйца">
+                    <span data-i18n="categories.eggs">Яйца</span>
+                </a>
+                <a href="catalog.html?cat=bakery" class="cat-card-horizontal">
+                    <img src="images/icons/categories/bakery.svg" alt="Выпечка">
+                    <span data-i18n="categories.bakery">Выпечка</span>
+                </a>
+            </div>
+        </section>
+
+        
+		
+        <section class="weekly-products container mt-10">
+            <h2 data-i18n="products.weekly">Товары недели</h2>
+            <div class="products-grid" id="weekly-products">
+                <article class="product-card" data-id="1">
+                    <div class="product-card__img">
+                        <img src="images/products/honey-2.jpg" alt="Мёд гречишный">
+                    </div>
+                    <div class="product-card__body">
+                        <p class="product-card__farmer">Пасека Петровичей</p>
+                        <h3 class="product-card__name">Мёд гречишный</h3>
+                        <p class="product-card__price">8.50 р. <span>/ 0.5 кг</span></p>
+                        <div class="product-card__footer">
+                            <div class="product-rating">★★★★☆</div>
+                            <button class="btn-add add-to-cart" data-id="1" data-name="Мёд гречишный" data-price="8.50">+</button>
+                        </div>
+                    </div>
+                </article>
+                <article class="product-card" data-id="2">
+                    <div class="product-card__img">
+                        <img src="images/products/cottage-cheese.jpg" alt="Творог домашний">
+                    </div>
+                    <div class="product-card__body">
+                        <p class="product-card__farmer">Молочный Рай</p>
+                        <h3 class="product-card__name">Творог домашний</h3>
+                        <p class="product-card__price">4.20 р. <span>/ 500 г</span></p>
+                        <div class="product-card__footer">
+                            <div class="product-rating">★★★★★</div>
+                            <button class="btn-add add-to-cart" data-id="2" data-name="Творог домашний" data-price="4.20">+</button>
+                        </div>
+                    </div>
+                </article>
+                <article class="product-card" data-id="3">
+                    <div class="product-card__img">
+                        <img src="images/products/strawberries.jpg" alt="Клубника садовая">
+                    </div>
+                    <div class="product-card__body">
+                        <p class="product-card__farmer">Ягодная Поляна</p>
+                        <h3 class="product-card__name">Клубника садовая</h3>
+                        <p class="product-card__price">6.00 р. <span>/ кг</span></p>
+                        <div class="product-card__footer">
+                            <div class="product-rating">★★★★★</div>
+                            <button class="btn-add add-to-cart" data-id="3" data-name="Клубника садовая" data-price="6.00">+</button>
+                        </div>
+                    </div>
+                </article>
+                <article class="product-card" data-id="4">
+                    <div class="product-card__img">
+                        <img src="images/products/carrots.jpg" alt="Морковь свежая">
+                    </div>
+                    <div class="product-card__body">
+                        <p class="product-card__farmer">Овощи У Ганны</p>
+                        <h3 class="product-card__name">Морковь свежая</h3>
+                        <p class="product-card__price">1.80 р. <span>/ кг</span></p>
+                        <div class="product-card__footer">
+                            <div class="product-rating">★★★★☆</div>
+                            <button class="btn-add add-to-cart" data-id="4" data-name="Морковь свежая" data-price="1.80">+</button>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        
+		
+        <section class="farmers container mt-10">
+            <h2 data-i18n="farmers.title">Наши фермеры</h2>
+            <div class="farmers-grid">
+                <article class="farmer-card">
+                    <div class="farmer-card__avatar">
+                        <img src="images/farmers/farmer-petrovichi.jpg" alt="Пасека Петровичей">
+                    </div>
+                    <h3 class="farmer-card__name">Пасека Петровичей</h3>
+                    <p class="farmer-card__region">📍 Гродненская область</p>
+                    <div class="tags">
+                        <span class="tag">Мёд</span>
+                        <span class="tag">Пыльца</span>
+                    </div>
+                </article>
+                <article class="farmer-card">
+                    <div class="farmer-card__avatar">
+                        <img src="images/farmers/farmer-milk.jpg" alt="Молочный Рай">
+                    </div>
+                    <h3 class="farmer-card__name">Молочный Рай</h3>
+                    <p class="farmer-card__region">📍 Минская область</p>
+                    <div class="tags">
+                        <span class="tag">Творог</span>
+                        <span class="tag">Сметана</span>
+                        <span class="tag">Сыр</span>
+                    </div>
+                </article>
+                <article class="farmer-card">
+                    <div class="farmer-card__avatar">
+                        <img src="images/farmers/farmer-ganna.jpg" alt="Овощи У Ганны">
+                    </div>
+                    <h3 class="farmer-card__name">Овощи У Ганны</h3>
+                    <p class="farmer-card__region">📍 Брестская область</p>
+                    <div class="tags">
+                        <span class="tag">Овощи</span>
+                        <span class="tag">Зелень</span>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <!-- КАК ЭТО РАБОТАЕТ -->
+        <section class="how-it-works container mt-10">
+            <h2 data-i18n="steps.title">Как это работает</h2>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-num">1</div>
+                    <h3 data-i18n="step1.title">Выберите товар</h3>
+                    <p data-i18n="step1.text">Найдите то, что вам нужно, в каталоге</p>
+                </div>
+                <div class="step">
+                    <div class="step-num">2</div>
+                    <h3 data-i18n="step2.title">Оформите заказ</h3>
+                    <p data-i18n="step2.text">Добавьте товары в корзину и оформите заказ</p>
+                </div>
+                <div class="step">
+                    <div class="step-num">3</div>
+                    <h3 data-i18n="step3.title">Фермер собирает</h3>
+                    <p data-i18n="step3.text">Фермер собирает свежие продукты</p>
+                </div>
+                <div class="step">
+                    <div class="step-num">4</div>
+                    <h3 data-i18n="step4.title">Доставка</h3>
+                    <p data-i18n="step4.text">Получите заказ с доставкой на дом</p>
+                </div>
+            </div>
+        </section>
+
+     
+	 
+        <section class="subscribe mt-10">
+            <div class="container">
+                <div class="grid-12">
+                    <div class="col-6">
+                        <h3 data-i18n="subscribe.title">Будьте в курсе сезонных новинок</h3>
+                        <p data-i18n="subscribe.text">Подпишитесь на рассылку и получайте скидки первыми!</p>
+                    </div>
+                    <div class="col-6">
+                        <form id="subscribe-form" class="subscribe-form">
+                            <input type="email" id="subscribe-email" placeholder="Ваш email" required>
+                            <button type="submit" class="btn btn-primary" data-i18n="subscribe.btn">Подписаться</button>
+                            <span id="email-error" style="font-size:12px;display:block;margin-top:8px;"></span>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+  
+  
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="index.html">
+                        <img src="images/logo-white.svg" alt="Сваё, Роднае" width="140" height="35">
+                    </a>
+                    <p data-i18n="footer.brand">Маркетплейс фермерской продукции Беларуси. Свежие продукты напрямую от производителя.</p>
+                </div>
+                <nav>
+                    <h4 data-i18n="footer.buyers">Покупателям</h4>
+                    <ul>
+                        <li><a href="catalog.html" data-i18n="catalog">Каталог</a></li>
+                        <li><a href="cart.html" data-i18n="cart">Корзина</a></li>
+                        <li><a href="account.html">Личный кабинет</a></li>
+                    </ul>
+                </nav>
+                <nav>
+                    <h4 data-i18n="footer.farmers">Фермерам</h4>
+                    <ul>
+                        <li><a href="#" data-i18n="footer.partner">Стать партнёром</a></li>
+                        <li><a href="#" data-i18n="footer.conditions">Условия сотрудничества</a></li>
+                    </ul>
+                </nav>
+                <div>
+                    <h4 data-i18n="footer.contacts">Контакты</h4>
+                    <p>📞 +375 (29) 123-45-67</p>
+                    <p>✉️ info@svayo-rodnae.by</p>
+                </div>
+            </div>
+            <p class="footer-copy">
+                <span>© 2025 «Сваё, Роднае». <span data-i18n="footer.copyright">Все права защищены.</span></span>
+                <span id="doc-date"></span>
+            </p>
+        </div>
+    </footer>
+
+    <script src="js/firebase-init.js"></script>
+    <script src="js/firebase-auth.js"></script>
+    <script src="js/firebase-account.js"></script>
+    <script src="js/firebase-orders.js"></script>
+    <script src="js/firebase-products.js"></script>
+    <script src="js/firebase-reviews.js"></script>
+    <script src="js/main.js"></script>
+
+    <script>
+        $(function() {
+           
+		   
+            $("#subscribe-form").submit(function(e) {
+                e.preventDefault();
+                const email = $("#subscribe-email").val().trim();
+                const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!regex.test(email)) {
+                    $("#email-error").text("❌ Введите корректный email").css("color", "var(--error)");
+                } else {
+                    $("#email-error").text("✅ Спасибо! Вы подписаны.").css("color", "var(--success)");
+                    $("#subscribe-email").val("");
+                }
+            });
+
+
+
+            $(".add-to-cart").click(function() {
+                const id = $(this).data("id");
+                const name = $(this).data("name");
+                const price = parseFloat($(this).data("price"));
+                addToCart(id, name, price, 1, "Фермер");
+                $(this).closest(".product-card").addClass("added");
+                setTimeout(() => $(this).closest(".product-card").removeClass("added"), 400);
+            });
+        });
+    </script>
+</body>
+</html>

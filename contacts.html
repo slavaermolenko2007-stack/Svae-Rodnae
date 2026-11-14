@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Контакты маркетплейса Сваё, Роднае — свяжитесь с нами">
+    <title>Контакты — Сваё, Роднае</title>
+    <link rel="icon" href="favicon.ico">
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/styles.css">
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+</head>
+<body>
+
+    <header class="site-header">
+        <div class="header-inner">
+            <a href="index.html" class="logo">
+                <img src="images/logo.svg" alt="Сваё, Роднае" width="200" height="50">
+            </a>
+            <nav id="main-nav" class="main-nav">
+                <a href="catalog.html" data-i18n="catalog">Каталог</a>
+                <a href="farmers.html" data-i18n="farmers">Наши фермеры</a>
+                <a href="how.html" data-i18n="howitworks">Как это работает</a>
+                <a href="about.html" data-i18n="about">О нас</a>
+                <a href="contacts.html" class="active" data-i18n="contacts">Контакты</a>
+            </nav>
+            <div class="header-actions">
+                <span class="lang-switch" id="lang-toggle" role="button" tabindex="0">RU</span>
+
+                <span class="auth-link">
+                    <a href="login.html" class="btn btn-outline-success btn-sm">Войти</a>
+                    <a href="register.html" class="btn btn-success btn-sm">Регистрация</a>
+                </span>
+
+                <span class="user-menu" style="display:none;">
+                    <a href="dashboard.html" class="btn btn-outline-success btn-sm">
+                        👤 <span class="user-name">Профиль</span>
+                    </a>
+                    <a href="#" onclick="logoutUser()" class="btn btn-outline-danger btn-sm">Выйти</a>
+                </span>
+
+                <a href="cart.html" class="btn btn-cart" id="cart-btn">
+                    <img src="images/icons/cart.svg" alt="Корзина" width="20" height="20">
+                    Корзина (<span id="cart-count">0</span>)
+                </a>
+                <button class="burger-btn" id="burger"><span></span><span></span><span></span></button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <nav class="breadcrumb">
+                <a href="index.html" data-i18n="catalog">Главная</a> → <span data-i18n="contacts">Контакты</span>
+            </nav>
+
+            <h1 data-i18n="contacts.title">Контакты</h1>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-12); margin: var(--space-8) 0;">
+
+                <div>
+                    <h2 data-i18n="contacts.phone">Свяжитесь с нами</h2>
+                    <div style="margin: var(--space-6) 0;">
+                        <div style="display: flex; align-items: center; gap: var(--space-4); margin-bottom: var(--space-5);">
+                            <div style="width: 50px; height: 50px; background: var(--green); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; flex-shrink: 0;">📞</div>
+                            <div><strong data-i18n="contacts.phone">Телефон</strong><br>+375 (29) 123-45-67<br>+375 (17) 123-45-67</div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: var(--space-4); margin-bottom: var(--space-5);">
+                            <div style="width: 50px; height: 50px; background: var(--green); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; flex-shrink: 0;">✉️</div>
+                            <div><strong data-i18n="contacts.email">Email</strong><br>info@svayo-rodnae.by<br>support@svayo-rodnae.by</div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: var(--space-4); margin-bottom: var(--space-5);">
+                            <div style="width: 50px; height: 50px; background: var(--green); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; flex-shrink: 0;">📍</div>
+                            <div><strong data-i18n="contacts.address">Адрес</strong><br>г. Минск, ул. Независимости, 123<br>Офис 456</div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: var(--space-4);">
+                            <div style="width: 50px; height: 50px; background: var(--green); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; flex-shrink: 0;">🕐</div>
+                            <div><strong data-i18n="contacts.hours">Режим работы</strong><br>Пн-Пт: 9:00 - 20:00<br>Сб-Вс: 10:00 - 18:00</div>
+                        </div>
+                    </div>
+
+                    <h2 style="margin-top: var(--space-10);" data-i18n="contacts.social">Мы в соцсетях</h2>
+                    <div style="display: flex; gap: var(--space-3); margin-top: var(--space-4);">
+                        <a href="#" style="width: 40px; height: 40px; background: #4267B2; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; text-decoration: none;">📘</a>
+                        <a href="#" style="width: 40px; height: 40px; background: #E4405F; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; text-decoration: none;">📷</a>
+                        <a href="#" style="width: 40px; height: 40px; background: #1DA1F2; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; text-decoration: none;">🐦</a>
+                        <a href="#" style="width: 40px; height: 40px; background: #0088CC; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; text-decoration: none;">📱</a>
+                    </div>
+                </div>
+
+                <div>
+                    <h2 data-i18n="contacts.form_title">Напишите нам</h2>
+                    <form id="contact-form" class="contact-form">
+                        <input type="text" id="contact-name" placeholder="Ваше имя" required>
+                        <input type="email" id="contact-email" placeholder="Ваш email" required>
+                        <input type="text" id="contact-subject" placeholder="Тема сообщения">
+                        <textarea id="contact-message" placeholder="Ваше сообщение..." rows="5" required></textarea>
+                        <button type="submit" class="btn btn-primary" data-i18n="contacts.form_send">Отправить сообщение</button>
+                    </form>
+                    <div id="form-message" class="form-message" style="display:none;"></div>
+                </div>
+            </div>
+
+            <div style="margin: var(--space-16) 0;">
+                <h2 data-i18n="contacts.map">Как нас найти</h2>
+                <div style="background: var(--border); border-radius: var(--radius-xl); overflow: hidden; height: 400px; margin-top: var(--space-4);">
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2350.000!2d27.5667!3d53.9!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x46dbcfd35b1e6ad3%3A0xb61b853ddb570d9!2z0JzQuNC90YHQug!5e0!3m2!1sru!2sby!4v1700000000000!5m2!1sru!2sby" 
+                            width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="index.html">
+                        <img src="images/logo-white.svg" alt="Сваё, Роднае" width="140" height="35">
+                    </a>
+                    <p data-i18n="footer.brand">Маркетплейс фермерской продукции Беларуси. Свежие продукты напрямую от производителя.</p>
+                </div>
+                <nav>
+                    <h4 data-i18n="footer.buyers">Покупателям</h4>
+                    <ul>
+                        <li><a href="catalog.html" data-i18n="catalog">Каталог</a></li>
+                        <li><a href="cart.html" data-i18n="cart">Корзина</a></li>
+                        <li><a href="account.html">Личный кабинет</a></li>
+                    </ul>
+                </nav>
+                <nav>
+                    <h4 data-i18n="footer.farmers">Фермерам</h4>
+                    <ul>
+                        <li><a href="#" data-i18n="footer.partner">Стать партнёром</a></li>
+                        <li><a href="#" data-i18n="footer.conditions">Условия сотрудничества</a></li>
+                    </ul>
+                </nav>
+                <div>
+                    <h4 data-i18n="footer.contacts">Контакты</h4>
+                    <p>📞 +375 (29) 123-45-67</p>
+                    <p>✉️ info@svayo-rodnae.by</p>
+                </div>
+            </div>
+            <p class="footer-copy">
+                <span>© 2025 «Сваё, Роднае». <span data-i18n="footer.copyright">Все права защищены.</span></span>
+                <span id="doc-date"></span>
+            </p>
+        </div>
+    </footer>
+
+    <script src="js/firebase-init.js"></script>
+    <script src="js/firebase-auth.js"></script>
+    <script src="js/firebase-account.js"></script>
+    <script src="js/firebase-orders.js"></script>
+    <script src="js/firebase-products.js"></script>
+    <script src="js/firebase-reviews.js"></script>
+    <script src="js/main.js"></script>
+
+    <script>
+        $(function() {
+            $("#contact-form").submit(function(e) {
+                e.preventDefault();
+                const name = $("#contact-name").val().trim();
+                const email = $("#contact-email").val().trim();
+                const message = $("#contact-message").val().trim();
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+                if (!name || !email || !message) {
+                    $("#form-message").html("❌ Заполните все обязательные поля!").css("color", "var(--error)").show();
+                    return false;
+                }
+                if (!emailRegex.test(email)) {
+                    $("#form-message").html("❌ Введите корректный email!").css("color", "var(--error)").show();
+                    return false;
+                }
+
+                $("#form-message").html("✅ Сообщение отправлено! Мы свяжемся с вами.").css("color", "var(--success)").show();
+                $("#contact-form")[0].reset();
+                setTimeout(() => $("#form-message").fadeOut(500), 5000);
+            });
+        });
+    </script>
+</body>
+</html>

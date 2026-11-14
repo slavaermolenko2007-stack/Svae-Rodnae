@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Каталог товаров — Сваё, Роднае</title>
+    <link rel="icon" href="favicon.ico">
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
+    <script src="js/firebase-init.js"></script>
+    <script src="js/firebase-auth.js"></script>
+</head>
+<body>
+
+    <header class="site-header">
+        <div class="header-inner">
+            <a href="index.html" class="logo">
+                <img src="images/logo.svg" alt="Сваё, Роднае" width="200" height="50">
+            </a>
+            <nav id="main-nav" class="main-nav">
+                <a href="catalog.html" class="active">Каталог</a>
+                <a href="farmers.html">Наши фермеры</a>
+                <a href="how.html">Как это работает</a>
+                <a href="about.html">О нас</a>
+                <a href="contacts.html">Контакты</a>
+            </nav>
+            <div class="header-actions">
+                <span class="lang-switch" id="lang-toggle">RU</span>
+
+                <span class="auth-link">
+                    <a href="login.html" class="btn btn-outline-success btn-sm">Войти</a>
+                    <a href="register.html" class="btn btn-success btn-sm">Регистрация</a>
+                </span>
+
+                <span class="user-menu" style="display:none;">
+                    <a href="dashboard.html" class="btn btn-outline-success btn-sm">
+                        👤 <span class="user-name">Профиль</span>
+                    </a>
+                    <a href="#" onclick="logoutUser()" class="btn btn-outline-danger btn-sm">Выйти</a>
+                </span>
+
+                <a href="cart.html" class="btn btn-cart">
+                    <img src="images/icons/cart.svg" alt="Корзина" width="20" height="20">
+                    Корзина (<span id="cart-count">0</span>)
+                </a>
+                <button class="burger-btn" id="burger"><span></span><span></span><span></span></button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <nav class="breadcrumb">
+                <a href="index.html">Главная</a> → <span>Каталог товаров</span>
+            </nav>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
+                <h1>Каталог товаров <span id="total-count" class="text-muted text-sm">(0)</span></h1>
+                <a href="add-product.html" id="addProductBtn" class="btn btn-primary" style="display:none; padding:10px 20px; border-radius:10px; background:#4A8C3F; color:white; text-decoration:none;">
+                    ➕ Добавить товар
+                </a>
+            </div>
+
+            <div class="catalog-layout mt-6">
+                <aside class="filters">
+                    <h2>Фильтры</h2>
+                    <form id="filter-form">
+                        <fieldset>
+                            <legend>Категория</legend>
+                            <label><input type="checkbox" name="category" value="vegetables"> Овощи и фрукты</label>
+                            <label><input type="checkbox" name="category" value="dairy"> Молочные продукты</label>
+                            <label><input type="checkbox" name="category" value="honey"> Мёд и варенья</label>
+                            <label><input type="checkbox" name="category" value="meat"> Мясо и птица</label>
+                            <label><input type="checkbox" name="category" value="eggs"> Яйца</label>
+                            <label><input type="checkbox" name="category" value="bakery"> Выпечка</label>
+                        </fieldset>
+                        <fieldset>
+                            <legend>Цена, р.</legend>
+                            <input type="range" id="price-min" min="0" max="2000" value="0" oninput="updatePriceDisplay()">
+                            <input type="range" id="price-max" min="0" max="2000" value="2000" oninput="updatePriceDisplay()">
+                            <span id="price-display">0 — 2000 р.</span>
+                        </fieldset>
+                        <fieldset>
+                            <legend>Регион</legend>
+                            <select id="region-filter">
+                                <option value="all">Все регионы</option>
+                                <option value="minsk">Минская</option>
+                                <option value="grodno">Гродненская</option>
+                                <option value="brest">Брестская</option>
+                                <option value="gomel">Гомельская</option>
+                                <option value="vitebsk">Витебская</option>
+                                <option value="mogilev">Могилёвская</option>
+                            </select>
+                        </fieldset>
+                        <button type="button" id="reset-filters" class="btn btn-secondary" style="width:100%; margin-top:16px;">Сбросить</button>
+                    </form>
+                </aside>
+
+                <section class="products-area">
+                    <div class="sort-bar">
+                        <button class="sort-btn active" data-sort="rating">По рейтингу</button>
+                        <button class="sort-btn" data-sort="price-asc">По цене ↑</button>
+                        <button class="sort-btn" data-sort="price-desc">По цене ↓</button>
+                        <input type="search" id="search-input" class="search-input" placeholder="🔍 Поиск товаров...">
+                    </div>
+
+                    <div id="catalog-grid" class="products-grid">
+                        <div style="grid-column:1/-1; text-align:center; padding:40px; color:#6B7280;">⏳ Загрузка товаров...</div>
+                    </div>
+
+                    <nav class="pagination" id="pagination">
+                        <a href="#" id="prev-page">←</a>
+                        <span id="page-numbers"></span>
+                        <a href="#" id="next-page">→</a>
+                    </nav>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="index.html"><img src="images/logo-white.svg" alt="Сваё, Роднае" width="140" height="35"></a>
+                    <p>Маркетплейс фермерской продукции Беларуси.</p>
+                </div>
+                <nav>
+                    <h4>Покупателям</h4>
+                    <ul>
+                        <li><a href="catalog.html">Каталог</a></li>
+                        <li><a href="cart.html">Корзина</a></li>
+                    </ul>
+                </nav>
+                <nav>
+                    <h4>Фермерам</h4>
+                    <ul>
+                        <li><a href="#">Стать партнёром</a></li>
+                    </ul>
+                </nav>
+                <div>
+                    <h4>Контакты</h4>
+                    <p>✉️ info@svayo-rodnae.by</p>
+                </div>
+            </div>
+            <p class="footer-copy">© 2025 «Сваё, Роднае».</p>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+
+    <script>
+        function updatePriceDisplay() {
+            let min = parseInt(document.getElementById('price-min').value);
+            let max = parseInt(document.getElementById('price-max').value);
+            if (min > max) { const t = min; min = max; max = t; }
+            document.getElementById('price-display').textContent = min + ' — ' + max + ' р.';
+        }
+
+        $(function() {
+
+        
+            function updateUI() {
+                const user = getCurrentUser ? getCurrentUser() : null;
+                if (user) {
+                    getUserData(user.uid).then(r => {
+                        if (r.success && (r.data.role === 'farmer' || r.data.role === 'admin')) {
+                            $('#addProductBtn').show();
+                        }
+                    });
+                }
+            }
+            setTimeout(updateUI, 500);
+            if (typeof auth !== 'undefined') {
+                auth.onAuthStateChanged(() => setTimeout(updateUI, 300));
+            }
+
+         
+            let baseProducts = [
+                { id: 1, name: 'Мёд гречишный', farmer: 'Пасека Петровичей', price: 8.50, category: 'honey', region: 'grodno', rating: 5, imageUrl: 'images/products/honey-2.jpg', unit: '0.5 кг' },
+                { id: 2, name: 'Творог домашний', farmer: 'Молочный Рай', price: 4.20, category: 'dairy', region: 'minsk', rating: 4, imageUrl: 'images/products/cottage-cheese.jpg', unit: '500 г' },
+                { id: 3, name: 'Клубника садовая', farmer: 'Ягодная Поляна', price: 6.00, category: 'vegetables', region: 'brest', rating: 5, imageUrl: 'images/products/strawberries.jpg', unit: '1 кг' },
+                { id: 4, name: 'Морковь свежая', farmer: 'Овощи У Ганны', price: 1.80, category: 'vegetables', region: 'brest', rating: 4, imageUrl: 'images/products/carrots.jpg', unit: '1 кг' },
+                { id: 5, name: 'Сметана 20%', farmer: 'Молочный Рай', price: 3.50, category: 'dairy', region: 'minsk', rating: 5, imageUrl: 'images/products/sour-cream.jpg', unit: '300 г' },
+                { id: 6, name: 'Гречиха зелёная', farmer: 'Зелёная Долина', price: 5.00, category: 'honey', region: 'grodno', rating: 4, imageUrl: 'images/products/buckwheat.jpg', unit: '1 кг' },
+                { id: 7, name: 'Молоко парное', farmer: 'Молочный Рай', price: 2.20, category: 'dairy', region: 'minsk', rating: 5, imageUrl: 'images/products/cottage-cheese.jpg', unit: '1 л' },
+                { id: 8, name: 'Говядина (вырезка)', farmer: 'Мясной Двор', price: 18.00, category: 'meat', region: 'mogilev', rating: 5, imageUrl: 'images/products/carrots.jpg', unit: '1 кг' },
+                { id: 9, name: 'Курица (тушка)', farmer: 'Мясной Двор', price: 8.00, category: 'meat', region: 'mogilev', rating: 4, imageUrl: 'images/products/carrots.jpg', unit: '1 шт' },
+                { id: 10, name: 'Малина свежая', farmer: 'Ягодная Поляна', price: 7.00, category: 'vegetables', region: 'gomel', rating: 5, imageUrl: 'images/products/strawberries.jpg', unit: '0.5 кг' },
+                { id: 11, name: 'Чёрная смородина', farmer: 'Ягодная Поляна', price: 5.00, category: 'vegetables', region: 'gomel', rating: 4, imageUrl: 'images/products/strawberries.jpg', unit: '0.5 кг' },
+                { id: 12, name: 'Мука ржаная', farmer: 'Зелёная Долина', price: 2.50, category: 'honey', region: 'vitebsk', rating: 4, imageUrl: 'images/products/buckwheat.jpg', unit: '1 кг' }
+            ];
+
+     
+            let allProducts = [];
+            let isLoading = true;
+
+            async function loadAllProducts() {
+                try {
+                 
+                    allProducts = [...baseProducts];
+                    
+                 
+                    try {
+                        const saved = localStorage.getItem('svayo_products');
+                        if (saved) {
+                            const userProducts = JSON.parse(saved);
+                            userProducts.forEach(p => {
+                                if (!allProducts.some(bp => bp.id == p.id)) {
+                                    allProducts.push(p);
+                                }
+                            });
+                            console.log('📦 Загружено из localStorage:', userProducts.length);
+                        }
+                    } catch (e) {
+                        console.warn('Ошибка localStorage:', e);
+                    }
+
+                    try {
+                        console.log('🔄 Загрузка из Firestore...');
+                        const snapshot = await db.collection('products').get();
+                        console.log('📦 Firestore ответ:', snapshot.size, 'документов');
+                        
+                        if (!snapshot.empty) {
+                            snapshot.forEach(doc => {
+                                const data = doc.data();
+                                console.log('📦 Товар из Firestore:', data.name, data.id);
+                                // Проверяем, есть ли уже такой товар
+                                if (!allProducts.some(p => p.id == data.id)) {
+                                    allProducts.push(data);
+                                }
+                            });
+                            console.log('📦 Загружено из Firestore:', snapshot.size);
+                        } else {
+                            console.log('📭 Firestore пуст');
+                        }
+                    } catch (e) {
+                        console.error('❌ Ошибка Firestore:', e.message);
+                    }
+
+                    console.log('📊 Всего товаров:', allProducts.length);
+                    isLoading = false;
+                    
+                    applyFiltersAndRender();
+                    
+                } catch (error) {
+                    console.error('❌ Ошибка загрузки товаров:', error);
+                    isLoading = false;
+                    $('#catalog-grid').html('<p style="grid-column:1/-1; text-align:center; padding:40px; color:#DC2626;">❌ Ошибка загрузки товаров</p>');
+                }
+            }
+
+
+            let currentSort = 'rating';
+            let currentPage = 1;
+            const perPage = 9;
+
+            function renderProducts(arr) {
+                const $grid = $('#catalog-grid').empty();
+                const total = arr.length;
+                const pages = Math.ceil(total / perPage);
+
+                if (total === 0) {
+                    $grid.html('<p style="grid-column:1/-1; text-align:center; padding:40px; color:#6B7280;">😔 По вашему запросу ничего не найдено</p>');
+                    $('#pagination').hide();
+                    $('#total-count').text('(0)');
+                    return;
+                }
+
+                $('#total-count').text('(' + total + ')');
+
+                if (currentPage > pages) currentPage = pages;
+                if (currentPage < 1) currentPage = 1;
+                
+                const start = (currentPage - 1) * perPage;
+                const end = Math.min(start + perPage, total);
+                const pageItems = arr.slice(start, end);
+
+                pageItems.forEach(p => {
+                    const stars = '★'.repeat(p.rating || 4) + '☆'.repeat(5 - (p.rating || 4));
+                    
+                    let imgSrc = 'images/placeholder.png';
+                    if (p.imageUrl) {
+                        if (p.imageUrl.startsWith('data:') || p.imageUrl.startsWith('http')) {
+                            imgSrc = p.imageUrl;
+                        } else if (p.imageUrl !== 'images/placeholder.png') {
+                            imgSrc = p.imageUrl;
+                        }
+                    }
+                    
+                    $grid.append(`
+                        <article class="product-card" data-id="${p.id}">
+                            <div class="product-card__img">
+                                <img src="${imgSrc}" alt="${p.name}" loading="lazy" onerror="this.src='images/placeholder.png'">
+                            </div>
+                            <div class="product-card__body">
+                                <p class="product-card__farmer">${p.farmer || 'Фермер'}</p>
+                                <h3 class="product-card__name">${p.name}</h3>
+                                <p class="product-card__price">${(p.price || 0).toFixed(2)} р. <span>/ ${p.unit || 'шт'}</span></p>
+                                <div class="product-card__footer">
+                                    <div class="product-rating">${stars}</div>
+                                    <button class="btn-add add-to-cart" 
+                                            data-id="${p.id}" 
+                                            data-name="${p.name}" 
+                                            data-price="${p.price || 0}"
+                                            data-farmer="${p.farmer || 'Фермер'}">
+                                        +
+                                    </button>
+                                </div>
+                            </div>
+                        </article>
+                    `);
+                });
+
+                const $pageNumbers = $('#page-numbers').empty();
+                if (pages > 1) {
+                    for (let i = 1; i <= pages; i++) {
+                        const $a = $(`<a href="#" data-page="${i}" class="${i === currentPage ? 'active' : ''}">${i}</a>`);
+                        $a.on('click', function(e) {
+                            e.preventDefault();
+                            currentPage = parseInt($(this).data('page'));
+                            applyFiltersAndRender();
+                        });
+                        $pageNumbers.append($a);
+                    }
+                    $('#pagination').show();
+                } else {
+                    $('#pagination').hide();
+                }
+
+                $('#prev-page').off('click').on('click', function(e) {
+                    e.preventDefault();
+                    if (currentPage > 1) { currentPage--; applyFiltersAndRender(); }
+                });
+                $('#next-page').off('click').on('click', function(e) {
+                    e.preventDefault();
+                    if (currentPage < pages) { currentPage++; applyFiltersAndRender(); }
+                });
+                $('#prev-page').toggle(currentPage > 1);
+                $('#next-page').toggle(currentPage < pages);
+            }
+
+
+            function applyFiltersAndRender() {
+                if (isLoading) return;
+                
+                const cats = $('input[name="category"]:checked').map(function() { return $(this).val(); }).get();
+                const region = $('#region-filter').val();
+                const min = parseFloat($('#price-min').val());
+                const max = parseFloat($('#price-max').val());
+                const search = $('#search-input').val().toLowerCase().trim();
+
+                let filtered = allProducts.filter(p => {
+                    if (cats.length && !cats.includes(p.category)) return false;
+                    if (region !== 'all' && p.region !== region) return false;
+                    if ((p.price || 0) < min || (p.price || 0) > max) return false;
+                    if (search && !p.name.toLowerCase().includes(search) && !(p.farmer || '').toLowerCase().includes(search)) return false;
+                    return true;
+                });
+
+                filtered.sort((a, b) => {
+                    if (currentSort === 'price-asc') return (a.price || 0) - (b.price || 0);
+                    if (currentSort === 'price-desc') return (b.price || 0) - (a.price || 0);
+                    if (currentSort === 'rating') return (b.rating || 0) - (a.rating || 0);
+                    return 0;
+                });
+
+                renderProducts(filtered);
+            }
+
+            $('input[name="category"], #region-filter').on('change', function() { currentPage = 1; applyFiltersAndRender(); });
+            $('#price-min, #price-max').on('input', function() { updatePriceDisplay(); currentPage = 1; applyFiltersAndRender(); });
+            $('#search-input').on('input', function() { currentPage = 1; applyFiltersAndRender(); });
+
+            $('.sort-btn').on('click', function() {
+                $('.sort-btn').removeClass('active');
+                $(this).addClass('active');
+                currentSort = $(this).data('sort');
+                currentPage = 1;
+                applyFiltersAndRender();
+            });
+
+            $('#reset-filters').on('click', function() {
+                $('input[name="category"]').prop('checked', false);
+                $('#region-filter').val('all');
+                $('#price-min').val(0);
+                $('#price-max').val(2000);
+                updatePriceDisplay();
+                $('#search-input').val('');
+                currentSort = 'rating';
+                currentPage = 1;
+                $('.sort-btn').removeClass('active');
+                $('.sort-btn[data-sort="rating"]').addClass('active');
+                applyFiltersAndRender();
+            });
+
+
+            updatePriceDisplay();
+            
+
+            loadAllProducts();
+
+            if (typeof updateCartCounter === 'function') {
+                updateCartCounter();
+            }
+
+        });
+    </script>
+</body>
+</html>

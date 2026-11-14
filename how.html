@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Как работает маркетплейс фермерской продукции Сваё, Роднае">
+    <title>Как это работает — Сваё, Роднае</title>
+    <link rel="icon" href="favicon.ico">
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/styles.css">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+     
+    <header class="site-header">
+        <div class="header-inner">
+            <a href="index.html" class="logo">
+                <img src="images/logo.svg" alt="Сваё, Роднае" width="200" height="50">
+            </a>
+            <nav id="main-nav" class="main-nav">
+                <a href="catalog.html" data-i18n="catalog">Каталог</a>
+                <a href="farmers.html" data-i18n="farmers">Наши фермеры</a>
+                <a href="how.html" class="active" data-i18n="howitworks">Как это работает</a>
+                <a href="about.html" data-i18n="about">О нас</a>
+                <a href="contacts.html" data-i18n="contacts">Контакты</a>
+            </nav>
+            <div class="header-actions">
+                <span class="lang-switch" id="lang-toggle" role="button" tabindex="0">RU</span>
+
+                <span class="auth-link">
+                    <a href="login.html" class="btn btn-outline-success btn-sm">Войти</a>
+                    <a href="register.html" class="btn btn-success btn-sm">Регистрация</a>
+                </span>
+
+                <span class="user-menu" style="display:none;">
+                    <a href="dashboard.html" class="btn btn-outline-success btn-sm">
+                        👤 <span class="user-name">Профиль</span>
+                    </a>
+                    <a href="#" onclick="logoutUser()" class="btn btn-outline-danger btn-sm">Выйти</a>
+                </span>
+
+                <a href="cart.html" class="btn btn-cart" id="cart-btn">
+                    <img src="images/icons/cart.svg" alt="Корзина" width="20" height="20">
+                    Корзина (<span id="cart-count">0</span>)
+                </a>
+                <button class="burger-btn" id="burger"><span></span><span></span><span></span></button>
+            </div>
+        </div>
+    </header>
+
+
+
+    <main>
+        <div class="container">
+            <!-- Хлебные крошки -->
+            <nav class="breadcrumb">
+                <a href="index.html">Главная</a> → <span>Как это работает</span>
+            </nav>
+
+            <h1>Как это работает</h1>
+            <p class="subtitle text-muted" style="font-size: var(--text-lg); margin-bottom: var(--space-10);">
+                Простая и прозрачная схема работы нашей платформы
+            </p>
+
+            <!-- Шаги для покупателей -->
+            <h2 style="margin-top: var(--space-10);">🛒 Для покупателей</h2>
+            <div class="steps mt-6">
+                <div class="step">
+                    <div class="step-num">1</div>
+                    <h3>Выберите товар</h3>
+                    <p>Найдите нужные продукты в каталоге.</p>
+                </div>
+                <div class="step">
+                    <div class="step-num">2</div>
+                    <h3>Добавьте в корзину</h3>
+                    <p>Выберите количество и добавьте в корзину.</p>
+                </div>
+                <div class="step">
+                    <div class="step-num">3</div>
+                    <h3>Оформите заказ</h3>
+                    <p>Укажите адрес доставки и способ оплаты.</p>
+                </div>
+                <div class="step">
+                    <div class="step-num">4</div>
+                    <h3>Получите доставку</h3>
+                    <p>Фермер собирает, курьер доставляет.</p>
+                </div>
+            </div>
+
+
+
+            <h2 style="margin-top: var(--space-12);">👨‍🌾 Для фермеров</h2>
+            <div class="steps mt-6">
+                <div class="step">
+                    <div class="step-num">1</div>
+                    <h3>Зарегистрируйтесь</h3>
+                    <p>Создайте аккаунт фермера.</p>
+                </div>
+                <div class="step">
+                    <div class="step-num">2</div>
+                    <h3>Добавьте товары</h3>
+                    <p>Загрузите фото, описание, цену.</p>
+                </div>
+                <div class="step">
+                    <div class="step-num">3</div>
+                    <h3>Принимайте заказы</h3>
+                    <p>Получайте уведомления о заказах.</p>
+                </div>
+                <div class="step">
+                    <div class="step-num">4</div>
+                    <h3>Отправляйте доставку</h3>
+                    <p>Передайте заказ курьеру.</p>
+                </div>
+            </div>
+
+
+
+            <div style="background: var(--cream); border-radius: var(--radius-xl); padding: var(--space-12); margin: var(--space-16) 0; text-align: center;">
+                <h2 style="margin-bottom: var(--space-8);">Почему выбирают нас</h2>
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-6);">
+                    <div>
+                        <div style="font-size: 3rem; margin-bottom: var(--space-3);">🛡️</div>
+                        <h3>Гарантия качества</h3>
+                        <p style="font-size: var(--text-sm); color: var(--text-muted);">Все фермеры проходят проверку</p>
+                    </div>
+                    <div>
+                        <div style="font-size: 3rem; margin-bottom: var(--space-3);">🚚</div>
+                        <h3>Быстрая доставка</h3>
+                        <p style="font-size: var(--text-sm); color: var(--text-muted);">Доставка по всей Беларуси</p>
+                    </div>
+                    <div>
+                        <div style="font-size: 3rem; margin-bottom: var(--space-3);">💰</div>
+                        <h3>Без посредников</h3>
+                        <p style="font-size: var(--text-sm); color: var(--text-muted);">Цены от производителя</p>
+                    </div>
+                    <div>
+                        <div style="font-size: 3rem; margin-bottom: var(--space-3);">🌿</div>
+                        <h3>Экологичность</h3>
+                        <p style="font-size: var(--text-sm); color: var(--text-muted);">Только натуральные продукты</p>
+                    </div>
+                </div>
+            </div>
+
+ 
+ 
+            <div style="margin: var(--space-16) 0;">
+                <h2>Часто задаваемые вопросы</h2>
+
+                <div class="faq-item mt-6">
+                    <button class="faq-question">❓ Как зарегистрироваться как покупатель?</button>
+                    <div class="faq-answer">
+                        <p>Нажмите на кнопку «Войти» → «Регистрация».</p>
+                        <p>Заполните поля и подтвердите email.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question">❓ Как стать фермером на платформе?</button>
+                    <div class="faq-answer">
+                        <p>Заполните форму «Стать партнёром» в разделе для фермеров.</p>
+                        <p>Наш менеджер свяжется с вами для подтверждения.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question">❓ Какие способы оплаты доступны?</button>
+                    <div class="faq-answer">
+                        <p>Доступны следующие способы оплаты:</p>
+                        <ul>
+                            <li>💳 Оплата банковской картой онлайн</li>
+                            <li>💰 Наличными курьеру при получении</li>
+                            <li>🏦 Банковский перевод по реквизитам</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question">❓ Как долго длится доставка?</button>
+                    <div class="faq-answer">
+                        <p>Доставка занимает <strong>1-3 рабочих дня</strong> в зависимости от региона.</p>
+                        <p>Сроки доставки уточняются при оформлении заказа.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question">❓ Можно ли вернуть товар?</button>
+                    <div class="faq-answer">
+                        <p>Да, вы можете вернуть товар в течение <strong>14 дней</strong> с момента получения.</p>
+                        <p>Для возврата свяжитесь с нашей службой поддержки.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question">❓ Как добавить свои товары (для фермеров)?</button>
+                    <div class="faq-answer">
+                        <p>После регистрации как фермер, в личном кабинете появится кнопка «Добавить товар».</p>
+                        <p>Заполните форму и ваш товар появится в каталоге.</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+
+
+
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="index.html"><img src="images/logo-white.svg" alt="Сваё, Роднае" width="140" height="35"></a>
+                    <p>Маркетплейс фермерской продукции Беларуси.</p>
+                </div>
+                <nav>
+                    <h4>Покупателям</h4>
+                    <ul>
+                        <li><a href="catalog.html">Каталог</a></li>
+                        <li><a href="cart.html">Корзина</a></li>
+                        <li><a href="account.html">Личный кабинет</a></li>
+                    </ul>
+                </nav>
+                <nav>
+                    <h4>Фермерам</h4>
+                    <ul>
+                        <li><a href="#">Стать партнёром</a></li>
+                        <li><a href="#">Условия сотрудничества</a></li>
+                    </ul>
+                </nav>
+                <div>
+                    <h4>Контакты</h4>
+                    <p>📞 +375 (29) 123-45-67</p>
+                    <p>✉️ info@svayo-rodnae.by</p>
+                </div>
+            </div>
+            <p class="footer-copy">
+                <span>© 2025 «Сваё, Роднае». Все права защищены.</span>
+                <span id="doc-date"></span>
+            </p>
+        </div>
+    </footer>
+
+
+
+    <script src="js/firebase-init.js"></script>
+    <script src="js/firebase-auth.js"></script>
+    <script src="js/main.js"></script>
+
+    <script>
+        $(function() {
+
+       
+	   
+            function updateCartCounterFast() {
+                try {
+                    const cart = JSON.parse(localStorage.getItem('svayo_cart')) || [];
+                    const total = cart.reduce((sum, item) => sum + (item.quantity || 0), 0);
+                    $('#cart-count').text(total);
+                } catch (e) {}
+            }
+            updateCartCounterFast();
+
+        
+		
+            function updateAuthUI() {
+                try {
+                    const user = getCurrentUser ? getCurrentUser() : null;
+                    const authLinks = document.querySelectorAll('.auth-link');
+                    const userMenu = document.querySelector('.user-menu');
+                    const userNameEl = document.querySelector('.user-name');
+
+                    if (user) {
+                        getUserData(user.uid).then(result => {
+                            if (result.success) {
+                                window.currentUser = { uid: user.uid, ...result.data };
+                                authLinks.forEach(el => el.style.display = 'none');
+                                if (userMenu) userMenu.style.display = 'inline-block';
+                                if (userNameEl) userNameEl.textContent = result.data.name || 'Пользователь';
+                            }
+                        });
+                    } else {
+                        authLinks.forEach(el => el.style.display = 'inline-block');
+                        if (userMenu) userMenu.style.display = 'none';
+                    }
+                } catch (e) {
+                    console.log('Ошибка обновления UI:', e);
+                }
+            }
+
+         
+            setTimeout(updateAuthUI, 500);
+
+            if (typeof auth !== 'undefined') {
+                auth.onAuthStateChanged(function(user) {
+                    setTimeout(updateAuthUI, 300);
+                });
+            }
+
+
+            const lastMod = document.lastModified;
+            if (lastMod) {
+                const dateStr = lastMod.split(' ')[0];
+                $('#doc-date').text('Обновлено: ' + dateStr);
+            }
+
+       
+	   
+
+        });
+    </script>
+</body>
+</html>

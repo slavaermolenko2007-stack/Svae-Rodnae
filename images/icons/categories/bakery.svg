@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" fill="none">
+  <defs>
+    <mask id="bakery-cuts">
+      <rect x="0" y="0" width="48" height="48" fill="white" />
+      <path d="M16 8v32M24 8v32M32 8v32" stroke="black" stroke-width="3" stroke-linecap="round" />
+    </mask>
+  </defs>
+
+  <g transform="rotate(-45 24 24)">
+    <path d="M4 24C4 17.5 10 13 24 13C38 13 44 17.5 44 24C44 30.5 38 35 24 35C10 35 4 30.5 4 24Z" 
+          fill="#4A8C3F" 
+          mask="url(#bakery-cuts)" />
+  </g>
+</svg>
